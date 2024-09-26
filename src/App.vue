@@ -1,33 +1,74 @@
 <script setup>
-import { useRouter,RouterView } from 'vue-router'
-const router = useRouter()
+import { useRouter, RouterView } from "vue-router";
+
+document.body.setAttribute("arco-theme", "dark");
+const router = useRouter();
 </script>
 
 <template>
-  <div>
+  <a-layout style="height: 100%" :style="{ background: 'var(--color-fill-2)' }">
     <a-layout-header>
-      <a-menu mode="horizontal" :default-selected-keys="['1']">
-        <span id="WebTitle">CSite-High-Wall</span>
-        <a-menu-item key="1" @click="router.push('/home')">主页</a-menu-item>
-        <a-menu-item key="2" @click="router.push('/test')">演示</a-menu-item>
-        <a-button type="primary" @click="router.push('/login')" id="login">登录</a-button>
-        <a-button type="secondary" @click="router.push('/register')" id="register">注册</a-button>
-      </a-menu>
+      <a-page-header
+        style="height: 100%"
+        :style="{ background: 'var(--color-bg-2)' }"
+        title="工地高墙"
+        subtitle="CSite High Wall"
+      >
+        <template #extra>
+          <a-space :size="0">
+            <a-space >
+              <a-button
+                style="border-radius: var(--border-radius-medium)"
+                type="primary"
+                @click="router.push('/login')"
+                id="login"
+                >登录</a-button
+              >
+              <a-button
+                style="border-radius: var(--border-radius-medium)"
+                type="secondary"
+                @click="router.push('/register')"
+                id="register"
+                >注册</a-button
+              >
+            </a-space>
+            <a-menu
+              style="width: 250px; margin-right: -60px"
+              mode="horizontal"
+              :default-selected-keys="['1']"
+            >
+              <a-menu-item key="1" @click="router.push('/home')"
+                >工地墙</a-menu-item
+              >
+              <a-menu-item key="2" @click="router.push('/test')" disabled
+                >个人页面</a-menu-item
+              >
+            </a-menu>
+          </a-space>
+        </template>
+      </a-page-header>
     </a-layout-header>
     <a-layout-content>
-      <RouterView></RouterView>
+      <RouterView style="height: 100%"></RouterView>
     </a-layout-content>
-  </div>
+    <a-layout-footer>
+      <a-row class="grid-demo">
+        <a-col :span="8"> </a-col>
+        <a-col :span="8"> </a-col>
+        <a-col :span="8"> </a-col>
+      </a-row>
+    </a-layout-footer>
+  </a-layout>
 </template>
 
 <style scoped>
-#login {
-  left: 70%;
+.arco-page-header {
+  padding: 16px 0 0px 0;
 }
-#register {
-  left: 71%;
-}
-#WebTitle {
-  font-size: 20px;
+
+@media (min-width: 597.5px) {
+  .arco-page-header {
+    padding: 0px 0;
+  }
 }
 </style>
