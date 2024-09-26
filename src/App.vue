@@ -33,7 +33,7 @@ const router = useRouter();
               >
             </a-space>
             <a-menu
-              style="width: 250px; margin-right: -60px"
+              style="width: 280px; margin-right: -90px"
               mode="horizontal"
               :default-selected-keys="['1']"
             >
