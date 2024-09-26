@@ -1,7 +1,7 @@
 {
-  "name": "pinia-test",
-  "version": "0.0.0",
+  "name": "csite-high-wall",
   "private": true,
+  "version": "0.0.0",
   "type": "module",
   "scripts": {
     "dev": "vite",
@@ -9,15 +9,17 @@
     "preview": "vite preview"
   },
   "dependencies": {
+    "@element-plus/icons-vue": "^2.3.1",
+    "axios": "^1.7.7",
     "element-plus": "^2.8.3",
-    "pinia": "^2.1.7",
-    "vue": "^3.4.29",
+    "pinia": "^2.2.2",
+    "vue": "^3.4.37",
     "vue-router": "4"
   },
   "devDependencies": {
-    "@vitejs/plugin-vue": "^5.0.5",
+    "@vitejs/plugin-vue": "^5.1.2",
     "unplugin-auto-import": "^0.18.3",
     "unplugin-vue-components": "^0.27.4",
-    "vite": "^5.3.1"
+    "vite": "^5.4.1"
   }
 }
