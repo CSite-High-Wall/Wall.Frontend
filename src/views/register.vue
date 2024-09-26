@@ -15,7 +15,7 @@ const handleSubmit = () => {
     <a-row class="row-demo">
         <a-col :span="24">
             <a-space direction="vertical" id="register">
-                <h1>登录</h1>
+                <h1>注册</h1>
                 <a-form :model="form" style="width: 300px" direction="vertical">
                     <a-form-item label="用户名">
                         <a-input v-model="form.username" />
@@ -23,7 +23,7 @@ const handleSubmit = () => {
                     <a-form-item label="密码">
                         <a-input v-model="form.password" />
                     </a-form-item>
-                    <a-button type="primary" status="success" @click="handleSubmit">登录</a-button>
+                    <a-button type="primary" status="success" @click="handleSubmit">注册</a-button>
                 </a-form>
             </a-space>
         </a-col>

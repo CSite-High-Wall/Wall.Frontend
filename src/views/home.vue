@@ -1,8 +1,10 @@
-<script setup>
-</script>
 <template>
-    <div>
-        <h1>这是主页</h1>
-    </div>
+    <a-space direction="vertical" style="display: block;">
+    </a-space>
 </template>
-<style></style>
+
+<style scoped>
+.grid-row {
+    text-align: center;
+}
+</style>
