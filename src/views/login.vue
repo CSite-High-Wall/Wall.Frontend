@@ -40,13 +40,14 @@ const router = useRouter();
         <a-space direction="horizontal" :size="15">
           <a-button
             @click="handleSubmit"
-            style="border-radius: var(--border-radius-medium)"
+            style="
+              border-radius: var(--border-radius-medium);
+              font-size: medium;
+            "
             size="large"
             type="primary"
           >
-            <a-typography-text style="font-size: medium">
-              登录
-            </a-typography-text>
+            登录
           </a-button>
           <a-link
             size="large"

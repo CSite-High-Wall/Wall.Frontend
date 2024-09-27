@@ -9,7 +9,12 @@ router.beforeEach((to) => {
   show_page_navigation.value = !(to.path == "/login" || to.path == "/register");
 });
 
-document.body.setAttribute("arco-theme", "dark");
+const prefersDark = window.matchMedia("(prefers-color-scheme: dark)").matches;
+document.body.setAttribute(
+  "arco-theme",
+  prefersDark.valueOf() ? "dark" : "light"
+);
+
 </script>
 
 <template>
@@ -48,22 +53,22 @@ document.body.setAttribute("arco-theme", "dark");
         </a-page-header>
 
         <template v-if="show_page_navigation">
-          <a-menu
-            style="width: 280px; margin-right: -90px"
-            mode="horizontal"
-            :default-selected-keys="['1']"
-          >
+          <a-menu mode="horizontal" :default-selected-keys="['1']">
             <a-menu-item key="1" @click="router.push('/home')"
               >工地墙</a-menu-item
             >
             <a-menu-item key="2" @click="router.push('/test')" disabled
-              >个人页面</a-menu-item
+              >个人页面 (未登录)</a-menu-item
             >
           </a-menu>
         </template>
       </a-space>
     </a-layout-header>
-    <a-layout-content>
+    <a-layout-content
+      :style="{
+        background: 'var(--color-fill-1)',
+      }"
+    >
       <RouterView style="height: 100%"> </RouterView>
     </a-layout-content>
     <a-layout-footer>
@@ -79,8 +84,5 @@ document.body.setAttribute("arco-theme", "dark");
 <style scoped>
 .arco-page-header {
   padding: 0px 0 0px 0;
-}
-
-@media (min-width: 597.5px) {
 }
 </style>
