@@ -14,7 +14,6 @@ document.body.setAttribute(
   "arco-theme",
   prefersDark.valueOf() ? "dark" : "light"
 );
-
 </script>
 
 <template>
@@ -71,12 +70,18 @@ document.body.setAttribute(
     >
       <RouterView style="height: 100%"> </RouterView>
     </a-layout-content>
-    <a-layout-footer>
-      <a-row class="grid-demo">
-        <a-col :span="8"> </a-col>
-        <a-col :span="8"> </a-col>
-        <a-col :span="8"> </a-col>
-      </a-row>
+    <a-layout-footer
+      style="padding: 10px 45px"
+      :style="{ background: 'var(--color-bg-2)' }"
+    >
+      <a-space :size="10">
+        <a-typography-text style="font-size: small;" type="secondary">
+          © 2024 CSite High Wall
+        </a-typography-text>
+        <a-typography-text code>
+          https://github.com/CSite-High-Wall/
+        </a-typography-text>
+      </a-space>
     </a-layout-footer>
   </a-layout>
 </template>

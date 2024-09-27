@@ -11,7 +11,8 @@
   "dependencies": {
     "pinia": "^2.2.2",
     "vue": "^3.4.37",
-    "vue-router": "^4.4.5"
+    "vue-router": "^4.4.5",
+    "vue-waterfall-plugin-next": "^2.6.0"
   },
   "devDependencies": {
     "@arco-design/web-vue": "^2.56.2",
