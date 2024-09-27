@@ -5,7 +5,7 @@ import { useRouter, RouterView } from "vue-router";
 const show_page_navigation = ref(false);
 
 const router = useRouter();
-router.beforeEach((to, from) => {
+router.beforeEach((to) => {
   show_page_navigation.value = !(to.path == "/login" || to.path == "/register");
 });
 

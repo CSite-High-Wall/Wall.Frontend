@@ -1,5 +1,6 @@
 <script setup lang="ts">
 import { ref } from "vue";
+import { useRouter } from "vue-router";
 
 const form = ref({
   username: "",
@@ -8,6 +9,7 @@ const form = ref({
 const handleSubmit = () => {
   console.log(form.value);
 };
+const router = useRouter();
 </script>
 
 <template>
@@ -51,9 +53,8 @@ const handleSubmit = () => {
             style="
               font-size: medium;
               border-radius: var(--border-radius-medium);
-              padding: 3px 10px 3px 10px;
-            "
-          >
+              padding: 3px 10px 3px 10px;"
+              @click="router.push('/register')">
             没有帐户？转到注册
           </a-link>
         </a-space>
