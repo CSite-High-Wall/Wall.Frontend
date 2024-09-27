@@ -71,13 +71,13 @@ const dataArray = [
       :width="400"
       :animationDelay="0"
       :breakpoints="{
-        1200: {
+        1400: {
           rowPerView: 3,
         },
-        1000: {
+        1200: {
           rowPerView: 2,
         },
-        800: {
+        1000: {
           rowPerView: 1,
         },
       }"
@@ -87,6 +87,7 @@ const dataArray = [
           <template #actions>
             <span class="action"> <IconShareInternal /> 分享</span>
             <span class="action"> <IconMessage /> 回复</span>
+            <span class="action"> <icon-stop /> 不看此人</span>
           </template>
           <template #cover>
             <!-- <div
@@ -120,7 +121,7 @@ const dataArray = [
                 <a-avatar :size="24" :style="{ marginRight: '8px' }">
                   A
                 </a-avatar>
-                <a-typography-text style="font-weight: 550;">username</a-typography-text>
+                <a-typography-text style="max-width: 90px; overflow: hidden; white-space: nowrap; text-overflow: ellipsis; font-weight: 550;">username</a-typography-text>
               </div>
             </template>
           </a-card-meta>
