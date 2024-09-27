@@ -1,22 +1,34 @@
 <script setup lang="ts">
+import { ref } from "vue";
 import { useRouter, RouterView } from "vue-router";
 
-document.body.setAttribute("arco-theme", "dark");
+const show_page_navigation = ref(false);
+
 const router = useRouter();
+router.beforeEach((to, from) => {
+  show_page_navigation.value = !(to.path == "/login" || to.path == "/register");
+});
+
+document.body.setAttribute("arco-theme", "dark");
 </script>
 
 <template>
   <a-layout style="height: 100%" :style="{ background: 'var(--color-fill-2)' }">
-    <a-layout-header>
-      <a-page-header
-        style="height: 100%"
-        :style="{ background: 'var(--color-bg-2)' }"
-        title="工地高墙"
-        subtitle="CSite High Wall"
-      >
-        <template #extra>
-          <a-space :size="0">
-            <a-space >
+    <a-layout-header
+      :style="{
+        padding: show_page_navigation ? '16px 0 0px 0' : '16px 0 16px 0',
+        background: 'var(--color-bg-2)',
+      }"
+    >
+      <a-space :size="0" direction="vertical" fill>
+        <a-page-header
+          @back="router.push('/home')"
+          style="height: 100%"
+          title="工地高墙"
+          subtitle="CSite High Wall"
+        >
+          <template #extra>
+            <a-space>
               <a-button
                 style="border-radius: var(--border-radius-medium)"
                 type="primary"
@@ -32,24 +44,27 @@ const router = useRouter();
                 >注册</a-button
               >
             </a-space>
-            <a-menu
-              style="width: 280px; margin-right: -90px"
-              mode="horizontal"
-              :default-selected-keys="['1']"
+          </template>
+        </a-page-header>
+
+        <template v-if="show_page_navigation">
+          <a-menu
+            style="width: 280px; margin-right: -90px"
+            mode="horizontal"
+            :default-selected-keys="['1']"
+          >
+            <a-menu-item key="1" @click="router.push('/home')"
+              >工地墙</a-menu-item
             >
-              <a-menu-item key="1" @click="router.push('/home')"
-                >工地墙</a-menu-item
-              >
-              <a-menu-item key="2" @click="router.push('/test')" disabled
-                >个人页面</a-menu-item
-              >
-            </a-menu>
-          </a-space>
+            <a-menu-item key="2" @click="router.push('/test')" disabled
+              >个人页面</a-menu-item
+            >
+          </a-menu>
         </template>
-      </a-page-header>
+      </a-space>
     </a-layout-header>
     <a-layout-content>
-      <RouterView style="height: 100%"></RouterView>
+      <RouterView style="height: 100%"> </RouterView>
     </a-layout-content>
     <a-layout-footer>
       <a-row class="grid-demo">
@@ -63,12 +78,9 @@ const router = useRouter();
 
 <style scoped>
 .arco-page-header {
-  padding: 16px 0 0px 0;
+  padding: 0px 0 0px 0;
 }
 
 @media (min-width: 597.5px) {
-  .arco-page-header {
-    padding: 0px 0;
-  }
 }
 </style>
