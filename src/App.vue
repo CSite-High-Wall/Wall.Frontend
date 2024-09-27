@@ -2,11 +2,11 @@
 import { ref } from "vue";
 import { useRouter, RouterView } from "vue-router";
 
-const show_page_navigation = ref(false);
+const is_home = ref(false)
 
 const router = useRouter();
 router.beforeEach((to) => {
-  show_page_navigation.value = !(to.path == "/login" || to.path == "/register");
+  is_home.value = to.path == "/home"
 });
 
 const prefersDark = window.matchMedia("(prefers-color-scheme: dark)").matches;
@@ -20,7 +20,7 @@ document.body.setAttribute(
   <a-layout style="height: 100%" :style="{ background: 'var(--color-fill-2)' }">
     <a-layout-header
       :style="{
-        padding: show_page_navigation ? '16px 0 0px 0' : '16px 0 16px 0',
+        padding: is_home ? '16px 0 0px 0' : '16px 0 16px 0',
         background: 'var(--color-bg-2)',
       }"
     >
@@ -30,6 +30,7 @@ document.body.setAttribute(
           style="height: 100%"
           title="工地高墙"
           subtitle="CSite High Wall"
+          :show-back="!is_home"
         >
           <template #extra>
             <a-space>
@@ -51,7 +52,7 @@ document.body.setAttribute(
           </template>
         </a-page-header>
 
-        <template v-if="show_page_navigation">
+        <template v-if="is_home">
           <a-menu mode="horizontal" :default-selected-keys="['1']">
             <a-menu-item key="1" @click="router.push('/home')"
               >工地墙</a-menu-item
@@ -88,6 +89,6 @@ document.body.setAttribute(
 
 <style scoped>
 .arco-page-header {
-  padding: 0px 0 0px 0;
+  padding: 0px 10px;  
 }
 </style>
