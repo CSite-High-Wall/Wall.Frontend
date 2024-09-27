@@ -1,4 +1,4 @@
-<script setup>
+<script setup lang="ts">
 import { useRouter, RouterView } from "vue-router";
 
 document.body.setAttribute("arco-theme", "dark");
