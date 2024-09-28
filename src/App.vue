@@ -1,6 +1,7 @@
 <script setup lang="ts">
 import { ref } from "vue";
 import { useRouter, RouterView } from "vue-router";
+import Cookie from "./cookie.ts";
 
 const is_home = ref(false);
 
@@ -14,9 +15,14 @@ document.body.setAttribute(
   "arco-theme",
   prefersDark.valueOf() ? "dark" : "light"
 );
+
+function test() {
+  console.log(Cookie.getCookie("userid"));
+}
 </script>
 
 <template>
+  <button @click="test()">test</button>
   <a-layout style="height: 100%" :style="{ background: 'var(--color-fill-2)' }">
     <a-layout-header
       :style="{

@@ -1,7 +1,8 @@
 <script setup lang="ts">
-import { ref } from "vue";
+import { ref,onMounted } from "vue";
 import { useRouter } from "vue-router";
 import instance from "../api.ts";
+import Cookie from "../cookie.ts";
 
 const form = ref({
   username: "",
@@ -9,6 +10,23 @@ const form = ref({
 });
 
 const router = useRouter();
+
+onMounted(() => {
+  if(Cookie.getCookie("token")!='') {
+    instance({
+      url: "/api/authserver/validate",
+      method: "post",
+      data: {
+        user_id: Cookie.getCookie("userid"),
+        access_token: Cookie.getCookie("token")
+      }
+    }).then(res => {
+      console.log(res.data);
+    }).catch(err => {
+      console.log(err);
+    })
+  }
+})
 
 const handleSubmit = () => {
   console.log(form.value);
@@ -21,6 +39,9 @@ const handleSubmit = () => {
     }
   }).then(res => {
     alert(res.data.message);
+    console.log(res.data);
+    Cookie.setCookie("userid", res.data.data.user_id, res.data.data.expire_time);
+    Cookie.setCookie("token", res.data.data.access_token, res.data.data.expire_time);
     router.push("/home");
   }).catch(err => {
     alert(err.response.data.message);
