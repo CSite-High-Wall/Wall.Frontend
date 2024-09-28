@@ -13,7 +13,7 @@ const router = useRouter();
 </script>
 
 <template>
-  <div style="display: table; margin: 0 auto">
+  <div style="display: table; margin: 0 auto; width: 80%; max-width: 400px; ">
     <a-layout>
       <a-layout-header>
         <a-typography-title style="padding-bottom: 10px; font-weight: 550">
@@ -21,7 +21,7 @@ const router = useRouter();
         </a-typography-title>
       </a-layout-header>
       <a-layout-content>
-        <a-space style="min-width: 360px" :size="15" direction="vertical">
+        <a-space style="width: 100%" :size="15" direction="vertical">
           <a-input
             size="large"
             v-model="form.username"

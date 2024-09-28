@@ -2,11 +2,11 @@
 import { ref } from "vue";
 import { useRouter, RouterView } from "vue-router";
 
-const is_home = ref(false)
+const is_home = ref(false);
 
 const router = useRouter();
 router.beforeEach((to) => {
-  is_home.value = to.path == "/home"
+  is_home.value = to.path == "/home";
 });
 
 const prefersDark = window.matchMedia("(prefers-color-scheme: dark)").matches;
@@ -33,7 +33,7 @@ document.body.setAttribute(
           :show-back="!is_home"
         >
           <template #extra>
-            <a-space>
+            <a-space class="button-area">
               <a-button
                 style="border-radius: var(--border-radius-medium)"
                 type="primary"
@@ -76,7 +76,7 @@ document.body.setAttribute(
       :style="{ background: 'var(--color-bg-2)' }"
     >
       <a-space :size="10">
-        <a-typography-text style="font-size: small;" type="secondary">
+        <a-typography-text style="font-size: small" type="secondary">
           © 2024 CSite High Wall
         </a-typography-text>
         <a-typography-text code>
@@ -89,6 +89,15 @@ document.body.setAttribute(
 
 <style scoped>
 .arco-page-header {
-  padding: 0px 10px;  
+  padding: 0px 10px 00px 10px;
+}
+
+.button-area {
+  margin: 10px 0px 0px 0px;
+}
+@media (min-width: 429px) {
+  .button-area {
+    margin: 0px 0px 0px 0px;
+  }
 }
 </style>

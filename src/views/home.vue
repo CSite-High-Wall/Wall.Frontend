@@ -1,5 +1,5 @@
 <script setup lang="ts">
-import {  Waterfall } from "vue-waterfall-plugin-next";
+import { Waterfall } from "vue-waterfall-plugin-next";
 import "vue-waterfall-plugin-next/dist/style.css";
 
 const dataArray = [
@@ -85,9 +85,9 @@ const dataArray = [
       <template #default="{ item }">
         <a-card style="border-radius: var(--border-radius-large)">
           <template #actions>
-            <span class="action"> <IconShareInternal /> 分享</span>
-            <span class="action"> <IconMessage /> 回复</span>
-            <span class="action"> <icon-stop /> 不看此人</span>
+            <span class="action"> <IconShareInternal /></span>
+            <span class="action"> <IconMessage /></span>
+            <span class="action"> <icon-stop /></span>
           </template>
           <template #cover>
             <!-- <div
@@ -106,9 +106,11 @@ const dataArray = [
           </template>
           <a-card-meta :hoverable="true" :description="item.content">
             <template #title>
-              <a-link style="font-weight: 600; font-size: large" href="link">{{
-                item.title
-              }}</a-link>
+              <a-link
+                style="font-weight: 600; font-size: large"
+                href="/expression/"
+                >{{ item.title }}</a-link
+              >
             </template>
             <template #avatar>
               <div
@@ -121,7 +123,16 @@ const dataArray = [
                 <a-avatar :size="24" :style="{ marginRight: '8px' }">
                   A
                 </a-avatar>
-                <a-typography-text style="max-width: 90px; overflow: hidden; white-space: nowrap; text-overflow: ellipsis; font-weight: 550;">username</a-typography-text>
+                <a-typography-text
+                  style="
+                    max-width: 90px;
+                    overflow: hidden;
+                    white-space: nowrap;
+                    text-overflow: ellipsis;
+                    font-weight: 550;
+                  "
+                  >username</a-typography-text
+                >
               </div>
             </template>
           </a-card-meta>
