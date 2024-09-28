@@ -1,6 +1,7 @@
 <script setup lang="ts">
 import { ref } from "vue";
 import { useRouter } from "vue-router";
+import instance from '../api.ts';
 
 const form = ref({
   username: "",
@@ -8,6 +9,19 @@ const form = ref({
 });
 const handleSubmit = () => {
   console.log(form.value);
+  instance({
+    url: '/api/register',
+    method: 'post',
+    data: {
+      user_name: form.value.username,
+      password: form.value.password
+    }
+  }).then(res => {
+    alert(res.data.message);
+    router.push('/login');
+  }).catch(err => {
+    alert(err.response.data.message);
+  })
 };
 const router = useRouter();
 </script>

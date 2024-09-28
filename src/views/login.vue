@@ -1,15 +1,31 @@
 <script setup lang="ts">
 import { ref } from "vue";
 import { useRouter } from "vue-router";
+import instance from "../api.ts";
 
 const form = ref({
   username: "",
   password: "",
 });
+
+const router = useRouter();
+
 const handleSubmit = () => {
   console.log(form.value);
+  instance({
+    url: "/api/authserver/authenticate",
+    method: "post",
+    data: {
+      user_name: form.value.username,
+      password: form.value.password,
+    }
+  }).then(res => {
+    alert(res.data.message);
+    router.push("/home");
+  }).catch(err => {
+    alert(err.response.data.message);
+  })
 };
-const router = useRouter();
 </script>
 
 <template>
