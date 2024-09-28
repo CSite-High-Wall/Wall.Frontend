@@ -1,4 +1,9 @@
-<script setup></script>
+<script setup lang="ts">
+import { useRouter } from "vue-router";
+import { AuthState } from "../stores/auth.ts";
+
+const router = useRouter();
+</script>
 
 <template>
   <a-space
@@ -55,6 +60,7 @@
     >
       <template #actions>
         <a-link
+        v-if="!AuthState"
           style="
             border-radius: var(--border-radius-medium);
             padding: 3px 10px 3px 10px;
@@ -66,7 +72,7 @@
         <a-button
           style="border-radius: var(--border-radius-medium)"
           type="primary"
-          disabled
+          :disabled="!AuthState"
         >
           发表评论
         </a-button>

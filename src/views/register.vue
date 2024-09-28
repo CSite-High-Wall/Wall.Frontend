@@ -1,27 +1,21 @@
 <script setup lang="ts">
 import { ref } from "vue";
 import { useRouter } from "vue-router";
-import instance from '../api.ts';
+import { Message } from "@arco-design/web-vue";
+import { Register } from "../api.ts";
 
 const form = ref({
   username: "",
   password: "",
 });
-const handleSubmit = () => {
-  console.log(form.value);
-  instance({
-    url: '/api/register',
-    method: 'post',
-    data: {
-      user_name: form.value.username,
-      password: form.value.password
-    }
-  }).then(res => {
-    alert(res.data.message);
-    router.push('/login');
-  }).catch(err => {
-    alert(err.response.data.message);
-  })
+
+const handleSubmit = async () => {
+  var result = await Register(form.value.username, form.value.password)
+  Message.info(result.message);
+
+  if (result.success) {
+    router.push("/login");
+  }
 };
 const router = useRouter();
 </script>
@@ -68,8 +62,10 @@ const router = useRouter();
             style="
               font-size: medium;
               border-radius: var(--border-radius-medium);
-              padding: 3px 10px 3px 10px;"
-              @click="router.push('/login')">
+              padding: 3px 10px 3px 10px;
+            "
+            @click="router.push('/login')"
+          >
             已有帐户？转到登录
           </a-link>
         </a-space>
@@ -78,4 +74,6 @@ const router = useRouter();
   </div>
 </template>
 
+<
 <style scoped></style>
+>

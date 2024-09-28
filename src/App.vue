@@ -1,13 +1,19 @@
 <script setup lang="ts">
-import { ref } from "vue";
+import { onMounted, ref } from "vue";
 import { useRouter, RouterView } from "vue-router";
+import { Validate } from "./api.ts";
+import { Message } from "@arco-design/web-vue";
+import { AuthState, useAuthStore } from "./stores/auth.ts";
 import Cookie from "./cookie.ts";
 
-const is_home = ref(false);
+const showNav = ref(false);
 
 const router = useRouter();
+const authStore = useAuthStore();
+
 router.beforeEach((to) => {
-  is_home.value = to.path == "/home";
+  showNav.value =
+    to.path == "/home" || to.path == "/publish" || to.path == "/profile";
 });
 
 const prefersDark = window.matchMedia("(prefers-color-scheme: dark)").matches;
@@ -16,17 +22,23 @@ document.body.setAttribute(
   prefersDark.valueOf() ? "dark" : "light"
 );
 
-function test() {
-  console.log(Cookie.getCookie("userid"));
-}
+onMounted(async () => {
+  var tokenVaild = await Validate();
+  if (Cookie.getCookie("token") != "" && !tokenVaild) {
+    Message.info("登录已失效");
+    router.push("/login");
+  } else {
+    authStore.setAuthState(tokenVaild);
+  }
+});
 </script>
 
 <template>
-  <button @click="test()">test</button>
-  <a-layout style="height: 100%" :style="{ background: 'var(--color-fill-2)' }">
+  <!-- <button @click="test()">test</button> -->
+  <a-layout style="height: 100%">
     <a-layout-header
       :style="{
-        padding: is_home ? '16px 0 0px 0' : '16px 0 16px 0',
+        padding: showNav ? '16px 0 0px 0' : '16px 0 16px 0',
         background: 'var(--color-bg-2)',
       }"
     >
@@ -36,35 +48,65 @@ function test() {
           style="height: 100%"
           title="工地高墙"
           subtitle="CSite High Wall"
-          :show-back="!is_home"
+          :show-back="!showNav"
         >
-          <template #extra>
+          <template v-if="!AuthState" #extra>
             <a-space class="button-area">
               <a-button
                 style="border-radius: var(--border-radius-medium)"
                 type="primary"
                 @click="router.push('/login')"
-                id="login"
                 >登录</a-button
               >
               <a-button
                 style="border-radius: var(--border-radius-medium)"
                 type="secondary"
                 @click="router.push('/register')"
-                id="register"
                 >注册</a-button
               >
             </a-space>
           </template>
-        </a-page-header>
 
-        <template v-if="is_home">
+          <template v-if="AuthState" #extra>
+            <div
+              :style="{
+                display: 'flex',
+                alignItems: 'center',
+                color: '#1D2129',
+              }"
+            >
+              <a-avatar :size="24" :style="{ marginRight: '8px' }">
+                A
+              </a-avatar>
+              <a-typography-text
+                style="
+                  max-width: 90px;
+                  overflow: hidden;
+                  white-space: nowrap;
+                  text-overflow: ellipsis;
+                  font-weight: 550;
+                "
+                >username</a-typography-text
+              >
+            </div>
+          </template>
+        </a-page-header>
+        <template v-if="showNav">
           <a-menu mode="horizontal" :default-selected-keys="['1']">
             <a-menu-item key="1" @click="router.push('/home')"
               >工地墙</a-menu-item
             >
-            <a-menu-item key="2" @click="router.push('/test')" disabled
-              >个人页面 (未登录)</a-menu-item
+            <a-menu-item
+              key="2"
+              @click="router.push('/publish')"
+              :disabled="!AuthState"
+              >贴东西</a-menu-item
+            >
+            <a-menu-item
+              key="3"
+              @click="router.push('/profile')"
+              :disabled="!AuthState"
+              >{{ AuthState ? "个人页面" : "个人页面 (未登录)" }}</a-menu-item
             >
           </a-menu>
         </template>
@@ -104,6 +146,16 @@ function test() {
 @media (min-width: 429px) {
   .button-area {
     margin: 0px 0px 0px 0px;
+  }
+}
+
+.avatar-area {
+  margin-top: 0px;
+}
+
+@media (min-width: 429px) {
+  .avatar-area {
+    margin-top: 0px;
   }
 }
 </style>

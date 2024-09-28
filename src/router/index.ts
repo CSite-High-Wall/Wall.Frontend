@@ -3,8 +3,10 @@ import Home from "../views/home.vue";
 import Test from "../views/test.vue";
 import Login from "../views/login.vue";
 import Register from "../views/register.vue";
-import Expression from "../views/expression.vue";
 import Profile from "../views/profile.vue";
+
+import Expression from "../views/expression.vue";
+import Publish from "../views/publish.vue"
 
 const routes = [
   {
@@ -34,7 +36,12 @@ const routes = [
   {
     path: "/expression",
     name: "Expression",
-    component: Expression,
+    component: Expression
+  },
+  {
+    path: '/publish',
+    name: 'Publish',
+    component: Publish,
   },
   {
     path: "/profile",
