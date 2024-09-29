@@ -87,4 +87,92 @@ export async function Validate() {
   }
 }
 
+export async function FetchAllExpression() {
+  try {
+    var response = await instance.get("/api/community/expressions");
+    return {
+      success: true,
+      data: response.data.data.expression_list,
+    };
+  } catch {
+    return {
+      success: false,
+      data: "获取墙贴列表失败",
+    };
+  }
+}
+
+export async function FetchTargetExpression(id: string) {
+  try {
+    var response = await instance.get(
+      "/api/community/expression?expression_id=" + id
+    );
+
+    return {
+      success: true,
+      data: new Expression(response.data.data),
+    };
+  } catch (err: any) {
+    return {
+      success: false,
+      data:
+        "获取指定墙贴失败, " + err.code == "ECONNABORTED"
+          ? "连接出现错误"
+          : err.response.data.message,
+    };
+  }
+}
+
+export async function PublishExpression(
+  title: string,
+  content: string,
+  anonymity: boolean
+) {
+  try {
+    await instance.post(
+      "/api/express/publish",
+      {
+        title: title,
+        content: content,
+        anonymity: anonymity,
+      },
+      {
+        headers: { Authorization: "Bearer " + Cookie.getCookie("token") },
+      }
+    );
+
+    return {
+      success: true,
+      message: "发表成功",
+    };
+  } catch (err: any) {
+    return {
+      success: false,
+      message:
+        "发表失败，" + err.code == "ECONNABORTED"
+          ? "连接出现错误"
+          : err.response.data.message,
+    };
+  }
+}
+
+class Expression {
+  public expression_id: any;
+  public user_id: any;
+  public user_name: string;
+  public title: string;
+  public content: string;
+  public time: string;
+
+  public constructor(data: any) {
+    this.expression_id = data.expression_id;
+    this.user_id = data.user_id;
+    this.user_name = data.user_name;
+    this.title = data.title;
+    this.content = data.content;
+    this.time = data.time;
+  }
+}
+
 export default instance;
+export { Expression };

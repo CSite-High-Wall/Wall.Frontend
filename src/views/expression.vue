@@ -1,8 +1,20 @@
 <script setup lang="ts">
-import { useRouter } from "vue-router";
+import { useRoute, useRouter } from "vue-router";
 import { AuthState } from "../stores/auth.ts";
+import { onMounted, ref } from "vue";
+import { Expression, FetchTargetExpression } from "../api.ts";
+import { Message } from "@arco-design/web-vue";
 
 const router = useRouter();
+const route = useRoute();
+var expression = ref(Expression);
+
+onMounted(async () => {
+  var result = await FetchTargetExpression(String(route.query?.expression_id));
+
+  if (result.success) expression.value = result.data;
+  else Message.info(result.data)
+});
 </script>
 
 <template>
@@ -19,7 +31,7 @@ const router = useRouter();
   >
     <a-space direction="vertical" :size="0">
       <a-typography-title style="font-weight: 550; margin-top: 0px">
-        Design system
+        {{ expression.title }}
       </a-typography-title>
       <div
         :style="{
@@ -36,21 +48,13 @@ const router = useRouter();
             text-overflow: ellipsis;
             font-weight: 550;
           "
-          >username</a-typography-text
+          >{{ expression.user_name }}</a-typography-text
         >
       </div>
     </a-space>
 
     <a-typography-paragraph>
-      A design is a plan or specification for the construction of an object or
-      system or for the implementation of an activity or process, or the result
-      of that plan or specification in the form of a prototype, product or
-      process. The verb to design expresses the process of developing a design.
-      <br />
-      <br />
-      In some cases, the direct construction of an object without an explicit
-      prior plan (such as in craftwork, some engineering, coding, and graphic
-      design) may also be considered
+      {{ expression.content }}
     </a-typography-paragraph>
 
     <a-divider></a-divider>
@@ -60,7 +64,7 @@ const router = useRouter();
     >
       <template #actions>
         <a-link
-        v-if="!AuthState"
+          v-if="!AuthState"
           style="
             border-radius: var(--border-radius-medium);
             padding: 3px 10px 3px 10px;

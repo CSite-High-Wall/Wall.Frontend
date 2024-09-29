@@ -1,6 +1,25 @@
 <script setup lang="ts">
+import { onMounted, ref } from "vue";
 import { useRouter } from "vue-router";
+import { PublishExpression } from "../api";
+import { Message } from "@arco-design/web-vue";
 const router = useRouter();
+const form = ref({
+  title: "",
+  content: "",
+  anonymity: false,
+});
+
+const handleSubmit = async () => {
+  var result = await PublishExpression(
+    form.value.title,
+    form.value.content,
+    form.value.anonymity
+  );
+
+  Message.info(result.message);
+  if (result.success) router.push("/home");
+};
 </script>
 
 <template>
@@ -25,7 +44,7 @@ const router = useRouter();
 
     <a-row style="margin-top: 30px" class="grid-demo">
       <a-col
-        flex="48px"
+        flex="50px"
         style="
           display: flex;
           align-items: center;
@@ -49,7 +68,12 @@ const router = useRouter();
       <a-col flex="15px"> </a-col>
       <a-col flex="auto">
         <a-layout-content style="display: block; margin: 0 auto">
-          <a-input size="large" placeholder="标题内容" allow-clear />
+          <a-input
+            v-model="form.title"
+            size="large"
+            placeholder="标题内容"
+            allow-clear
+          />
         </a-layout-content>
       </a-col>
     </a-row>
@@ -68,15 +92,16 @@ const router = useRouter();
         正文
       </a-typography-title>
       <a-textarea
+        v-model="form.content"
         placeholder="正文内容"
-        show-word-limit 
+        show-word-limit
         :auto-size="{
           minRows: 10,
         }"
       />
     </a-space>
 
-    <a-checkbox>
+    <a-checkbox v-model="form.anonymity">
       <a-typography-text> 匿名发表 </a-typography-text>
     </a-checkbox>
     <a-divider></a-divider>
@@ -85,6 +110,7 @@ const router = useRouter();
       style="border-radius: var(--border-radius-medium); font-size: medium"
       size="large"
       type="primary"
+      @click="handleSubmit"
     >
       发表
     </a-button>
