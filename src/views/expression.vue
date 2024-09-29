@@ -1,19 +1,22 @@
 <script setup lang="ts">
 import { useRoute, useRouter } from "vue-router";
-import { AuthState } from "../stores/auth.ts";
+import { AuthState, AvatarUrl } from "../stores/auth.ts";
 import { onMounted, ref } from "vue";
-import { Expression, FetchTargetExpression } from "../api.ts";
+import { FetchTargetExpression } from "../api.ts";
 import { Message } from "@arco-design/web-vue";
+import { Expression } from "../types.ts";
 
 const router = useRouter();
 const route = useRoute();
-var expression = ref(Expression);
+const expression = ref<Expression | null>(null);
 
 onMounted(async () => {
   var result = await FetchTargetExpression(String(route.query?.expression_id));
 
   if (result.success) expression.value = result.data;
-  else Message.info(result.data)
+  else Message.info(result.data);
+
+  console.log(expression.value?.avatar_url);
 });
 </script>
 
@@ -31,7 +34,7 @@ onMounted(async () => {
   >
     <a-space direction="vertical" :size="0">
       <a-typography-title style="font-weight: 550; margin-top: 0px">
-        {{ expression.title }}
+        {{ expression?.title }}
       </a-typography-title>
       <div
         :style="{
@@ -40,7 +43,9 @@ onMounted(async () => {
           color: '#1D2129',
         }"
       >
-        <a-avatar :size="32" :style="{ marginRight: '8px' }"> A </a-avatar>
+        <a-avatar :imageUrl="expression?.avatar_url" :size="32" :style="{ marginRight: '8px' }">
+          <IconUser v-if="expression == null || expression.avatar_url == ''" />
+        </a-avatar>
         <a-typography-text
           style="
             overflow: hidden;
@@ -48,20 +53,28 @@ onMounted(async () => {
             text-overflow: ellipsis;
             font-weight: 550;
           "
-          >{{ expression.user_name }}</a-typography-text
+          >{{ expression?.user_name }}</a-typography-text
         >
       </div>
     </a-space>
 
-    <a-typography-paragraph>
-      {{ expression.content }}
+    <a-typography-paragraph style="margin-top: -20px">
+      {{ expression?.content }}
+    </a-typography-paragraph>
+
+    <a-typography-paragraph type="secondary" style="margin-bottom: -30px">
+      发表于：{{ expression?.time }}
     </a-typography-paragraph>
 
     <a-divider></a-divider>
     <a-comment
       align="right"
-      avatar="https://p1-arco.byteimg.com/tos-cn-i-uwbnlip3yd/3ee5f13fb09879ecb5185e440cef6eb9.png~tplv-uwbnlip3yd-webp.webp"
     >
+      <template #avatar>
+        <a-avatar :imageUrl="AvatarUrl" :size="32" :style="{ marginRight: '8px' }">
+          <IconUser v-if="AvatarUrl == ''" />
+        </a-avatar>
+      </template>
       <template #actions>
         <a-link
           v-if="!AuthState"

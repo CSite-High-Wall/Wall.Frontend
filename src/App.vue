@@ -1,9 +1,16 @@
 <script setup lang="ts">
-import { onMounted, ref } from "vue";
+import { onMounted, ref, watch } from "vue";
 import { useRouter, RouterView } from "vue-router";
 import { Validate } from "./api.ts";
 import { Message } from "@arco-design/web-vue";
-import { AuthState, useAuthStore } from "./stores/auth.ts";
+import {
+  AuthState,
+  useAuthStore,
+  RefreshUserInfo,
+  ClearUserInfo,
+  AvatarUrl,
+  UserName,
+} from "./stores/auth.ts";
 import Cookie from "./cookie.ts";
 
 const showNav = ref(false);
@@ -21,6 +28,11 @@ document.body.setAttribute(
   "arco-theme",
   prefersDark.valueOf() ? "dark" : "light"
 );
+
+watch(AuthState, async (newState) => {
+  if (newState) await RefreshUserInfo();
+  else ClearUserInfo();
+});
 
 onMounted(async () => {
   var tokenVaild = await Validate();
@@ -75,8 +87,8 @@ onMounted(async () => {
                 color: '#1D2129',
               }"
             >
-              <a-avatar :size="24" :style="{ marginRight: '8px' }">
-                A
+              <a-avatar :imageUrl="AvatarUrl" :size="28" :style="{ marginRight: '8px' }">
+                <IconUser v-if="AvatarUrl == ''" />
               </a-avatar>
               <a-typography-text
                 style="
@@ -86,7 +98,7 @@ onMounted(async () => {
                   text-overflow: ellipsis;
                   font-weight: 550;
                 "
-                >username</a-typography-text
+                >{{ UserName }}</a-typography-text
               >
             </div>
           </template>
