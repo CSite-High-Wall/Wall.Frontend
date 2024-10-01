@@ -32,7 +32,7 @@ const handleSubmit = async () => {
 };
 
 onMounted(async () => {
-  var result = await FetchTargetExpression(String(route.query?.expression_id));
+  var result = await FetchTargetExpression(Number(route.query?.expression_id));
 
   if (result.success) {
     expression = result.data as Expression;

@@ -1,27 +1,28 @@
 <script setup lang="ts">
-import { onMounted, ref, watch } from "vue";
+import { ref } from "vue";
 import { useRouter, RouterView } from "vue-router";
-import { Validate } from "./api.ts";
-import { Message } from "@arco-design/web-vue";
-import {
-  AuthState,
-  useAuthStore,
-  RefreshUserInfo,
-  ClearUserInfo,
-  AvatarUrl,
-  UserName,
-} from "./stores/auth.ts";
-import Cookie from "./cookie.ts";
-
-const showNav = ref(false);
+import { AuthState, AvatarUrl, UserName } from "./stores/auth.ts";
 
 const router = useRouter();
-const authStore = useAuthStore();
 
-router.beforeEach((to) => {
-  showNav.value =
-    to.path == "/home" || to.path == "/publish" || to.path == "/profile";
-});
+const showNav = ref(
+  location.pathname == "/home" ||
+    location.pathname == "/publish" ||
+    location.pathname == "/profile"
+);
+const navigationSelection = ref<string[] | null>();
+
+switch (location.pathname) {
+  case "/home":
+    navigationSelection.value = ["1"];
+    break;
+  case "/publish":
+    navigationSelection.value = ["2"];
+    break;
+  case "/profile":
+    navigationSelection.value = ["3"];
+    break;
+}
 
 const prefersDark = window.matchMedia("(prefers-color-scheme: dark)").matches;
 document.body.setAttribute(
@@ -29,24 +30,25 @@ document.body.setAttribute(
   prefersDark.valueOf() ? "dark" : "light"
 );
 
-watch(AuthState, async (newState) => {
-  if (newState) await RefreshUserInfo();
-  else ClearUserInfo();
-});
+router.beforeEach((to) => {
+  showNav.value =
+    to.path == "/home" || to.path == "/publish" || to.path == "/profile";
 
-onMounted(async () => {
-  var tokenVaild = await Validate();
-  if (Cookie.getCookie("token") != "" && !tokenVaild) {
-    Message.info("登录已失效");
-    router.push("/login");
-  } else {
-    authStore.setAuthState(tokenVaild);
+  switch (to.path) {
+    case "/home":
+      navigationSelection.value = ["1"];
+      break;
+    case "/publish":
+      navigationSelection.value = ["2"];
+      break;
+    case "/profile":
+      navigationSelection.value = ["3"];
+      break;
   }
 });
 </script>
 
 <template>
-  <!-- <button @click="test()">test</button> -->
   <a-layout style="height: 100%">
     <a-layout-header
       :style="{
@@ -87,7 +89,11 @@ onMounted(async () => {
                 color: '#1D2129',
               }"
             >
-              <a-avatar :imageUrl="AvatarUrl" :size="28" :style="{ marginRight: '8px' }">
+              <a-avatar
+                :imageUrl="AvatarUrl"
+                :size="28"
+                :style="{ marginRight: '8px' }"
+              >
                 <IconUser v-if="AvatarUrl == ''" />
               </a-avatar>
               <a-typography-text
@@ -104,7 +110,11 @@ onMounted(async () => {
           </template>
         </a-page-header>
         <template v-if="showNav">
-          <a-menu mode="horizontal" :default-selected-keys="['1']">
+          <a-menu
+            :selected-keys="navigationSelection"
+            mode="horizontal"
+            :default-selected-keys="['1']"
+          >
             <a-menu-item key="1" @click="router.push('/home')"
               >工地墙</a-menu-item
             >

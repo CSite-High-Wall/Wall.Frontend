@@ -1,6 +1,14 @@
 import axios from "axios";
 import Cookie from "../src/cookie";
-import { Expression, CreateExpression, Review, CreateReview } from "./types";
+import {
+  Expression,
+  CreateExpression,
+  Review,
+  CreateReview,
+  BlacklistItem,
+  CreateBlacklistItem,
+} from "./types";
+import { UserId } from "./stores/auth";
 
 const instance = axios.create({
   baseURL: "http://localhost:8000/",
@@ -23,7 +31,8 @@ export async function Register(username: string, password: string) {
     return {
       success: false,
       message:
-        "注册失败，" + (err.code == "ECONNABORTED"
+        "注册失败，" +
+        (err.code == "ECONNABORTED"
           ? "连接出现错误"
           : err.response.data.message),
     };
@@ -57,7 +66,8 @@ export async function Authenticate(username: string, password: string) {
     return {
       success: false,
       message:
-        "登录失败，" + (err.code == "ECONNABORTED"
+        "登录失败，" +
+        (err.code == "ECONNABORTED"
           ? "连接出现错误"
           : err.response.data.message),
     };
@@ -80,9 +90,46 @@ export async function Validate() {
   }
 }
 
+export async function SignOut() {
+  if (Cookie.getCookie("token") == "")
+    return {
+      success: true,
+      message: "登出成功",
+    };
+
+  try {
+    await instance.post("/api/authserver/signout", {
+      user_id: Cookie.getCookie("userid"),
+      access_token: Cookie.getCookie("token"),
+    });
+
+    Cookie.setCookie("userid", "", 0);
+    Cookie.setCookie("token", "", 0);
+
+    return {
+      success: true,
+      message: "登出成功",
+    };
+  } catch (err: any) {
+    console.log(err);
+    return {
+      success: false,
+      message:
+        "登出失败，" +
+        (err.code == "ECONNABORTED"
+          ? "连接出现错误"
+          : err.response.data.message),
+    };
+  }
+}
+
 export async function FetchAllExpression() {
   try {
-    var response = await instance.get("/api/community/expressions");
+    var response = await instance.get(
+      UserId.value != ""
+        ? "/api/community/expressions?user_id=" + UserId.value
+        : "/api/community/expressions"
+    );
     var list: Array<Expression> = new Array<Expression>();
 
     response.data.data.expression_list.forEach((element: any) => {
@@ -102,10 +149,10 @@ export async function FetchAllExpression() {
   }
 }
 
-export async function FetchTargetExpression(id: string) {
+export async function FetchTargetExpression(expressionId: number) {
   try {
     var response = await instance.get(
-      "/api/community/expression?expression_id=" + id
+      "/api/community/expression?expression_id=" + expressionId
     );
 
     return {
@@ -117,17 +164,23 @@ export async function FetchTargetExpression(id: string) {
     return {
       success: false,
       data:
-        "获取指定墙贴失败, " + (err.code == "ECONNABORTED"
+        "获取指定墙贴失败, " +
+        (err.code == "ECONNABORTED"
           ? "连接出现错误"
           : err.response.data.message),
     };
   }
 }
 
-export async function FetchReviewOfExpression(id: string) {
+export async function FetchReviewOfExpression(expressionId: number) {
   try {
     var response = await instance.get(
-      "/api/community/review?expression_id=" + id
+      UserId.value != ""
+        ? "/api/community/review?expression_id=" +
+            expressionId +
+            "&user_id=" +
+            UserId.value
+        : "/api/community/review?expression_id=" + expressionId
     );
 
     var list: Array<Review> = new Array<Review>();
@@ -145,7 +198,8 @@ export async function FetchReviewOfExpression(id: string) {
     return {
       success: false,
       data:
-        "获取墙贴评论失败, " + (err.code == "ECONNABORTED"
+        "获取墙贴评论失败, " +
+        (err.code == "ECONNABORTED"
           ? "连接出现错误"
           : err.response.data.message),
     };
@@ -172,6 +226,30 @@ export async function FetchUserExpression() {
     return {
       success: false,
       data: "获取个人墙贴列表失败",
+    };
+  }
+}
+
+export async function FetchUserBlacklist() {
+  try {
+    var response = await instance.get("/api/profile/blacklist/get", {
+      headers: { Authorization: "Bearer " + Cookie.getCookie("token") },
+    });
+    var list: Array<BlacklistItem> = new Array<BlacklistItem>();
+
+    response.data.data.blacklist.forEach((element: any) => {
+      list.push(CreateBlacklistItem(element));
+    });
+
+    return {
+      success: true,
+      data: list,
+    };
+  } catch (err) {
+    console.log(err);
+    return {
+      success: false,
+      data: "获取屏蔽用户列表失败",
     };
   }
 }
@@ -203,17 +281,18 @@ export async function PublishExpression(
     return {
       success: false,
       message:
-        "发表失败，" + (err.code == "ECONNABORTED"
+        "发表失败，" +
+        (err.code == "ECONNABORTED"
           ? "连接出现错误"
           : err.response.data.message),
     };
   }
 }
 
-export async function DeleteExpression(expression_id: number) {
+export async function DeleteExpression(expressionId: number) {
   try {
     await instance.delete(
-      "/api/express/delete?expression_id=" + String(expression_id),
+      "/api/express/delete?expression_id=" + String(expressionId),
       {
         headers: { Authorization: "Bearer " + Cookie.getCookie("token") },
       }
@@ -228,7 +307,8 @@ export async function DeleteExpression(expression_id: number) {
     return {
       success: false,
       message:
-        "删除指定墙贴失败, " + (err.code == "ECONNABORTED"
+        "删除指定墙贴失败, " +
+        (err.code == "ECONNABORTED"
           ? "连接出现错误"
           : err.response.data.message),
     };
@@ -236,7 +316,7 @@ export async function DeleteExpression(expression_id: number) {
 }
 
 export async function EditExpresssion(
-  expression_id: number,
+  expressionId: number,
   title: string,
   content: string
 ) {
@@ -244,7 +324,7 @@ export async function EditExpresssion(
     await instance.put(
       "/api/express/edit",
       {
-        expression_id: expression_id,
+        expression_id: expressionId,
         title: title,
         content: content,
       },
@@ -262,19 +342,20 @@ export async function EditExpresssion(
     return {
       success: false,
       message:
-        "修改墙贴失败，" + (err.code == "ECONNABORTED"
+        "修改墙贴失败，" +
+        (err.code == "ECONNABORTED"
           ? "连接出现错误"
           : err.response.data.message),
     };
   }
 }
 
-export async function PublishReview(expression_id: number, content: string) {
+export async function PublishReview(expressionId: number, content: string) {
   try {
     await instance.post(
       "/api/review/publish",
       {
-        expression_id: expression_id,
+        expression_id: expressionId,
         content: content,
       },
       {
@@ -291,16 +372,17 @@ export async function PublishReview(expression_id: number, content: string) {
     return {
       success: false,
       message:
-        "发表失败，" + (err.code == "ECONNABORTED"
+        "发表失败，" +
+        (err.code == "ECONNABORTED"
           ? "连接出现错误"
           : err.response.data.message),
     };
   }
 }
 
-export async function DeleteReview(review_id: number) {
+export async function DeleteReview(reviewId: number) {
   try {
-    await instance.delete("/api/review/delete?review_id=" + String(review_id), {
+    await instance.delete("/api/review/delete?review_id=" + String(reviewId), {
       headers: { Authorization: "Bearer " + Cookie.getCookie("token") },
     });
 
@@ -339,7 +421,61 @@ export async function UploadUserAvatarUrl(url: string) {
     return {
       success: false,
       message:
-        "上传用户头像失败, " + (err.code == "ECONNABORTED"
+        "上传用户头像失败, " +
+        (err.code == "ECONNABORTED"
+          ? "连接出现错误"
+          : err.response.data.message),
+    };
+  }
+}
+
+export async function AddUserIntoBlacklist(userId: string) {
+  try {
+    await instance.post(
+      "/api/profile/blacklist/add?blocked_user_id=" + userId,
+      {},
+      {
+        headers: { Authorization: "Bearer " + Cookie.getCookie("token") },
+      }
+    );
+
+    return {
+      success: true,
+      message: "屏蔽用户成功",
+    };
+  } catch (err: any) {
+    console.log(err);
+    return {
+      success: false,
+      message:
+        "屏蔽用户失败，" +
+        (err.code == "ECONNABORTED"
+          ? "连接出现错误"
+          : err.response.data.message),
+    };
+  }
+}
+
+export async function RemoveUserFromBlacklist(userId: string) {
+  try {
+    await instance.delete(
+      "/api/profile/blacklist/remove?blocked_user_id=" + userId,
+      {
+        headers: { Authorization: "Bearer " + Cookie.getCookie("token") },
+      }
+    );
+
+    return {
+      success: true,
+      message: "移除屏蔽用户成功",
+    };
+  } catch (err: any) {
+    console.log(err);
+    return {
+      success: false,
+      message:
+        "移除屏蔽用户失败，" +
+        (err.code == "ECONNABORTED"
           ? "连接出现错误"
           : err.response.data.message),
     };

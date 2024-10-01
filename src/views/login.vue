@@ -3,7 +3,7 @@ import { ref } from "vue";
 import { useRouter } from "vue-router";
 import { Message } from "@arco-design/web-vue";
 import { Authenticate } from "../api.ts";
-import { useAuthStore } from "../stores/auth.ts";
+import { RefreshUserInfo, useAuthStore } from "../stores/auth.ts";
 
 const form = ref({
   username: "",
@@ -18,10 +18,13 @@ const handleSubmit = async () => {
   Message.info(result.message);
 
   if (result.success) {
+    await RefreshUserInfo()
     authStore.setAuthState(true);
+    
     router.push("/home");
   }
 };
+
 </script>
 
 <template>

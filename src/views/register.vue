@@ -7,6 +7,7 @@ import { Register } from "../api.ts";
 const form = ref({
   username: "",
   password: "",
+  confirm_password: ""
 });
 
 const handleSubmit = async () => {
@@ -42,6 +43,12 @@ const router = useRouter();
             placeholder="密码"
             allow-clear
           />
+          <a-input-password
+            size="large"
+            v-model="form.confirm_password"
+            placeholder="确认你的密码"
+            allow-clear
+          />
         </a-space>
       </a-layout-content>
       <a-layout-footer style="padding-top: 30px">
@@ -54,6 +61,7 @@ const router = useRouter();
             "
             size="large"
             type="primary"
+            :disabled="form.username == '' || form.password == '' || form.confirm_password != form.password"
           >
             注册
           </a-button>

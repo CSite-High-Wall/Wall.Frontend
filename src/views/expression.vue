@@ -20,13 +20,13 @@ const expression = ref<Expression | null>(null);
 const reviewArray = ref<Review[] | null>(null);
 
 onMounted(async () => {
-  var result = await FetchTargetExpression(String(route.query?.expression_id));
+  var result = await FetchTargetExpression(Number(route.query?.expression_id));
 
   if (result.success) expression.value = result.data as Expression;
   else Message.info(result.data);
 
   var reviewsResult = await FetchReviewOfExpression(
-    String(route.query?.expression_id)
+    Number(route.query?.expression_id)
   );
 
   if (result.success) reviewArray.value = reviewsResult.data as Review[];
@@ -130,6 +130,14 @@ const deleteReviewId = ref(-1);
         "
       >
         <IconDelete /> 删除该贴
+      </span>
+    </a-space>
+    <a-space v-else>
+      <span
+        class="action"
+        
+      >
+        <IconStop /> 屏蔽此人
       </span>
     </a-space>
     <a-divider></a-divider>

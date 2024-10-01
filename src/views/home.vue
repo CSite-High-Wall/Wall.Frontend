@@ -1,12 +1,15 @@
 <script setup lang="ts">
 import { Waterfall } from "vue-waterfall-plugin-next";
 import { useRouter } from "vue-router";
-import { FetchAllExpression } from "../api";
+import { AddUserIntoBlacklist, FetchAllExpression } from "../api";
 import { Expression } from "../types.ts";
 import { onMounted, ref } from "vue";
 
 import "vue-waterfall-plugin-next/dist/style.css";
+import { UserId } from "../stores/auth.ts";
+import { Message } from "@arco-design/web-vue";
 
+const currentLocation = location;
 const router = useRouter();
 const dataArray = ref<Expression[] | null>(null);
 
@@ -43,9 +46,23 @@ onMounted(async () => {
         <template #default="{ item }">
           <a-card hoverable style="border-radius: var(--border-radius-large)">
             <template #actions>
-              <span class="action"> <IconShareInternal /></span>
-              <span class="action"> <IconMessage /></span>
-              <span class="action"> <icon-stop /></span>
+              <span class="action"> <IconShareInternal /> 分享 </span>
+              <span
+                class="action"
+                v-if="item.user_id != UserId"
+                @click="
+                  async () => {
+                    var result = await AddUserIntoBlacklist(item.user_id);
+                    Message.info(result.message);
+                    
+                    if (result.success) {
+                      currentLocation.reload();
+                    }
+                  }
+                "
+              >
+                <IconStop /> 屏蔽
+              </span>
             </template>
             <template #cover>
               <!-- <div
