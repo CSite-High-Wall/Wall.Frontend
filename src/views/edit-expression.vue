@@ -1,25 +1,46 @@
 <script setup lang="ts">
-import { ref } from "vue";
-import { useRouter } from "vue-router";
-import { PublishExpression } from "../api";
+import { onMounted, ref } from "vue";
+import { useRoute, useRouter } from "vue-router";
+import { EditExpresssion, FetchTargetExpression } from "../api";
 import { Message } from "@arco-design/web-vue";
+import { Expression } from "../types";
+
 const router = useRouter();
+const route = useRoute();
+var expression: Expression;
+
 const form = ref({
   title: "",
   content: "",
-  anonymity: false,
 });
 
 const handleSubmit = async () => {
-  var result = await PublishExpression(
+  var result = await EditExpresssion(
+    expression.expression_id,
     form.value.title,
-    form.value.content,
-    form.value.anonymity
+    form.value.content
   );
-
   Message.info(result.message);
-  if (result.success) router.push("/home");
+  if (result.success) {
+    router.push({
+      path: "/expression",
+      query: {
+        expression_id: expression.expression_id,
+      },
+    });
+  }
 };
+
+onMounted(async () => {
+  var result = await FetchTargetExpression(String(route.query?.expression_id));
+
+  if (result.success) {
+    expression = result.data as Expression;
+
+    form.value.title = expression.title;
+    form.value.content = expression.content;
+  } else Message.info(result.data);
+});
 </script>
 
 <template>
@@ -39,7 +60,7 @@ const handleSubmit = async () => {
       :heading="3"
       style="margin: auto; font-weight: 550; margin-top: 0px"
     >
-      贴上你想发表的内容
+      修改帖子
     </a-typography-title>
 
     <a-row style="margin-top: 30px" class="grid-demo">
@@ -100,22 +121,34 @@ const handleSubmit = async () => {
         }"
       />
     </a-space>
-
-    <a-checkbox v-model="form.anonymity">
-      <a-typography-text> 匿名发表 (发表后不可修改) </a-typography-text>
-    </a-checkbox>
     <a-divider></a-divider>
-
-    <a-button
-      :disabled="form.title == '' || form.content == ''"
-      style="border-radius: var(--border-radius-medium); font-size: medium"
-      size="large"
-      type="primary"
-      @click="handleSubmit"
-    >
-      发表
-    </a-button>
+    <a-space>
+      <a-button
+        :disabled="form.title == '' || form.content == ''"
+        style="border-radius: var(--border-radius-medium); font-size: medium"
+        size="large"
+        type="primary"
+        @click="handleSubmit"
+      >
+        修改
+      </a-button>
+      <a-button
+        style="border-radius: var(--border-radius-medium); font-size: medium"
+        size="large"
+        type="secondary"
+        @click="
+          () => {
+            router.push({
+              path: '/expression',
+              query: {
+                expression_id: expression.expression_id,
+              },
+            });
+          }
+        "
+      >
+        取消
+      </a-button>
+    </a-space>
   </a-space>
 </template>
-
-<style></style>

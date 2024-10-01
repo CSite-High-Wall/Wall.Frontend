@@ -41,7 +41,7 @@ export async function RefreshUserInfo() {
     UserName.value = response.data.data.user_name
     AvatarUrl.value = response.data.data.avatar_url
     CreatedAt.value = response.data.data.created_at
-    LastLoginTime.value = response.data.data.last_login_time
+    LastLoginTime.value =  new Date(response.data.data.last_login_time).toLocaleString()
 
     return {
       success: true,
@@ -51,9 +51,9 @@ export async function RefreshUserInfo() {
     return {
       success: false,
       message:
-        "获取用户个人信息失败，" + err.code == "ECONNABORTED"
+        "获取用户个人信息失败，" + (err.code == "ECONNABORTED"
           ? "连接出现错误"
-          : err.response.data.message,
+          : err.response.data.message),
     };
   }
 }

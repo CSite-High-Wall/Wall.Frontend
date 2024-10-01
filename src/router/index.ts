@@ -7,6 +7,7 @@ import Profile from "../views/profile.vue";
 
 import Expression from "../views/expression.vue";
 import Publish from "../views/publish.vue"
+import EditExpression from "../views/edit-expression.vue";
 
 const routes = [
   {
@@ -48,6 +49,11 @@ const routes = [
     name: "Profile",
     component: Profile,
   },
+  {
+    path: "/edit-expression",
+    name: "EditExpression",
+    component: EditExpression
+  }
 ];
 
 const router = createRouter({

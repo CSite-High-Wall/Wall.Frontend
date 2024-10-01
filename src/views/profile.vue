@@ -1,13 +1,15 @@
 <script setup lang="ts">
 import { onMounted, ref } from "vue";
 import { AvatarUrl, LastLoginTime, UserName } from "../stores/auth";
-import { FetchUserExpression } from "../api";
+import { FetchUserExpression, UploadUserAvatarUrl } from "../api";
 import { Expression } from "../types";
 import { useRouter } from "vue-router";
+import { Message } from "@arco-design/web-vue";
 
 const router = useRouter();
+const currentLocation = location;
 
-const dialogVisible = ref(false);
+const editAvatarDialogVisible = ref(false);
 const dataArray = ref<Expression[] | null>(null);
 const dialogForm = ref({
   url: "",
@@ -20,22 +22,6 @@ onMounted(async () => {
     dataArray.value = result.data as Expression[];
   }
 });
-
-const handleClick = () => {
-  dialogVisible.value = true;
-};
-
-const handleBeforeOk = (done: any) => {
-  console.log(dialogForm);
-  window.setTimeout(() => {
-    done();
-    // prevent close
-    // done(false)
-  }, 3000);
-};
-const handleCancel = () => {
-  dialogVisible.value = false;
-};
 </script>
 
 <template>
@@ -95,7 +81,11 @@ const handleCancel = () => {
       </div>
       <a-space>
         <a-button
-          @click="handleClick"
+          @click="
+            () => {
+              editAvatarDialogVisible = true;
+            }
+          "
           style="border-radius: var(--border-radius-medium)"
           type="primary"
           >上传网络图片头像</a-button
@@ -177,10 +167,29 @@ const handleCancel = () => {
   </a-space>
   <a-modal
     width="auto"
-    v-model:visible="dialogVisible"
+    v-model:visible="editAvatarDialogVisible"
     title="上传网络图片"
-    @cancel="handleCancel"
-    @before-ok="handleBeforeOk"
+    @ok="
+      async () => {
+        var result = await UploadUserAvatarUrl(dialogForm.url);
+        Message.info(result.message);
+
+        editAvatarDialogVisible = false;
+
+        if (result.success) {
+          AvatarUrl = dialogForm.url;
+          currentLocation.reload();
+        }
+      }
+    "
+    @cancel="
+      () => {
+        editAvatarDialogVisible = false;
+      }
+    "
+    :ok-button-props="{
+      disabled: dialogForm.url == '',
+    }"
   >
     <a-form :model="dialogForm">
       <a-form-item field="url" label="Url">

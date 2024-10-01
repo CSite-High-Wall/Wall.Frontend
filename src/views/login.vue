@@ -18,8 +18,8 @@ const handleSubmit = async () => {
   Message.info(result.message);
 
   if (result.success) {
-    router.push("/home");
     authStore.setAuthState(true);
+    router.push("/home");
   }
 };
 </script>
