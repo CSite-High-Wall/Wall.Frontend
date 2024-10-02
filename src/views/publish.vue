@@ -1,8 +1,9 @@
 <script setup lang="ts">
-import { ref } from "vue";
+import { onMounted, ref } from "vue";
 import { useRouter } from "vue-router";
 import { PublishExpression } from "../api";
 import { Message } from "@arco-design/web-vue";
+import { AuthState } from "../stores/auth";
 const router = useRouter();
 const form = ref({
   title: "",
@@ -20,6 +21,12 @@ const handleSubmit = async () => {
   Message.info(result.message);
   if (result.success) router.push("/home");
 };
+
+onMounted(() => {
+  if (!AuthState.value) {
+    router.push("/login");
+  }
+})
 </script>
 
 <template>
@@ -92,6 +99,7 @@ const handleSubmit = async () => {
         正文
       </a-typography-title>
       <a-textarea
+        :max-length="800"
         v-model="form.content"
         placeholder="正文内容"
         show-word-limit

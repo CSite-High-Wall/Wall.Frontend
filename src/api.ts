@@ -11,8 +11,8 @@ import {
 import { UserId } from "./stores/auth";
 
 const instance = axios.create({
-  baseURL: "http://localhost:8000/",
-  timeout: 1000,
+  baseURL: "http://47.98.245.204",
+  timeout: 60000,
 });
 
 export async function Register(username: string, password: string) {
@@ -127,8 +127,8 @@ export async function FetchAllExpression() {
   try {
     var response = await instance.get(
       UserId.value != ""
-        ? "/api/community/expressions?user_id=" + UserId.value
-        : "/api/community/expressions"
+        ? "/api/community/expressions?enable_truncation=true&user_id=" + UserId.value
+        : "/api/community/expressions?enable_truncation=true"
     );
     var list: Array<Expression> = new Array<Expression>();
 
@@ -140,11 +140,15 @@ export async function FetchAllExpression() {
       success: true,
       data: list,
     };
-  } catch (err) {
+  } catch (err: any) {
     console.log(err);
     return {
       success: false,
-      data: "获取墙贴列表失败",
+      data:
+        "获取墙贴列表失败，" +
+        (err.code == "ECONNABORTED"
+          ? "连接出现错误"
+          : err.response.data.message),
     };
   }
 }
@@ -395,9 +399,9 @@ export async function DeleteReview(reviewId: number) {
     return {
       success: false,
       message:
-        "删除指定评论失败, " + err.code == "ECONNABORTED"
+        "删除指定评论失败, " + (err.code == "ECONNABORTED"
           ? "连接出现错误"
-          : err.response.data.message,
+          : err.response.data.message),
     };
   }
 }

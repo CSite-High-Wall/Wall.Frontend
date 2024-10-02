@@ -3,6 +3,7 @@ import { useRoute, useRouter } from "vue-router";
 import { AuthState, AvatarUrl, UserId } from "../stores/auth.ts";
 import { onMounted, ref } from "vue";
 import {
+  AddUserIntoBlacklist,
   DeleteExpression,
   DeleteReview,
   FetchReviewOfExpression,
@@ -16,6 +17,8 @@ const currentLocation = location;
 
 const router = useRouter();
 const route = useRoute();
+const loadingExpression = ref(true);
+const loadingReviews = ref(true);
 const expression = ref<Expression | null>(null);
 const reviewArray = ref<Review[] | null>(null);
 
@@ -24,6 +27,7 @@ onMounted(async () => {
 
   if (result.success) expression.value = result.data as Expression;
   else Message.info(result.data);
+  loadingExpression.value = false;
 
   var reviewsResult = await FetchReviewOfExpression(
     Number(route.query?.expression_id)
@@ -31,6 +35,7 @@ onMounted(async () => {
 
   if (result.success) reviewArray.value = reviewsResult.data as Review[];
   else Message.info(result.data as string);
+  loadingReviews.value = false;
 });
 
 const reviewInput = ref("");
@@ -67,48 +72,57 @@ const deleteReviewId = ref(-1);
     direction="vertical"
     fill
   >
-    <a-space direction="vertical" :size="0">
-      <a-typography-title style="font-weight: 550; margin-top: 0px">
-        {{ expression?.title }}
-      </a-typography-title>
-      <div
-        :style="{
-          display: 'flex',
-          alignItems: 'center',
-          color: '#1D2129',
-        }"
-      >
-        <a-avatar
-          :imageUrl="expression?.avatar_url"
-          :size="32"
-          :style="{ marginRight: '8px' }"
+    <a-spin
+      v-if="loadingExpression"
+      style="width: 100%"
+      :size="32"
+      tip="加载中，请稍后"
+    />
+    <a-space v-if="!loadingExpression" :size="0" direction="vertical" fill>
+      <a-space direction="vertical" :size="0">
+        <a-typography-title style="font-weight: 550; margin-top: 0px">
+          {{ expression?.title }}
+        </a-typography-title>
+        <div
+          :style="{
+            display: 'flex',
+            alignItems: 'center',
+            color: '#1D2129',
+          }"
         >
-          <IconUser v-if="expression == null || expression.avatar_url == ''" />
-        </a-avatar>
-        <a-typography-text
-          style="
-            overflow: hidden;
-            white-space: nowrap;
-            text-overflow: ellipsis;
-            font-weight: 550;
-          "
-          >{{ expression?.user_name }}</a-typography-text
-        >
-      </div>
-    </a-space>
+          <a-avatar
+            :imageUrl="expression?.avatar_url"
+            :size="32"
+            :style="{ marginRight: '8px' }"
+          >
+            <IconUser
+              v-if="expression == null || expression.avatar_url == ''"
+            />
+          </a-avatar>
+          <a-typography-text
+            style="
+              overflow: hidden;
+              white-space: nowrap;
+              text-overflow: ellipsis;
+              font-weight: 550;
+            "
+            >{{ expression?.user_name }}</a-typography-text
+          >
+        </div>
+      </a-space>
 
-    <a-typography-paragraph style="margin-top: 20px">
-      {{ expression?.content }}
-    </a-typography-paragraph>
+      <a-typography-paragraph style="margin-top: 20px">
+        {{ expression?.content }}
+      </a-typography-paragraph>
 
-    <a-typography-paragraph type="secondary" style="margin-top: 40px">
-      发表于：{{ expression?.time }}
-    </a-typography-paragraph>
+      <a-typography-paragraph type="secondary" style="margin-top: 40px">
+        发表于：{{ expression?.time }}
+      </a-typography-paragraph>
 
-    <a-space v-if="expression?.user_id == UserId">
-      <span
-        class="action"
-        @click="
+      <a-space v-if="expression?.user_id == UserId">
+        <span
+          class="action"
+          @click="
           () => {
             router.push({
               path: '/edit-expression',
@@ -118,27 +132,38 @@ const deleteReviewId = ref(-1);
             });
           }
         "
-      >
-        <IconEdit /> 编辑该贴
-      </span>
-      <span
-        class="action"
-        @click="
-          () => {
-            deleteExpressionDialogVisible = true;
-          }
-        "
-      >
-        <IconDelete /> 删除该贴
-      </span>
-    </a-space>
-    <a-space v-else>
-      <span
-        class="action"
-        
-      >
-        <IconStop /> 屏蔽此人
-      </span>
+        >
+          <IconEdit /> 编辑该贴
+        </span>
+        <span
+          class="action"
+          @click="
+            () => {
+              deleteExpressionDialogVisible = true;
+            }
+          "
+        >
+          <IconDelete /> 删除该贴
+        </span>
+      </a-space>
+      <a-space v-else-if="AuthState">
+        <span
+          class="action"
+          v-if="expression!.user_id != UserId"
+          @click="
+            async () => {
+              var result = await AddUserIntoBlacklist(expression!.user_id);
+              Message.info(result.message);
+
+              if (result.success) {
+                currentLocation.reload();
+              }
+            }
+          "
+        >
+          <IconStop /> 屏蔽此人
+        </span>
+      </a-space>
     </a-space>
     <a-divider></a-divider>
     <a-comment align="right">
@@ -176,47 +201,55 @@ const deleteReviewId = ref(-1);
       </template>
     </a-comment>
     <a-divider></a-divider>
-    <a-typography-title style="font-weight: 550" :heading="3">
-      评论
-    </a-typography-title>
-    <template v-if="reviewArray != null">
-      <a-space :size="0" style="width: 100%" direction="vertical" fill>
-        <a-comment
-          v-for="item in reviewArray"
-          style="margin-top: 20px"
-          align="right"
-          :author="item.user_name"
-          :content="item.content"
-          :datetime="item.created_at"
-        >
-          <template #avatar>
-            <a-avatar
-              :imageUrl="item.avatar_url"
-              :size="32"
-              :style="{ marginRight: '8px' }"
-            >
-              <IconUser v-if="item.avatar_url == ''" />
-            </a-avatar>
-          </template>
-          <template #actions v-if="item.user_id == UserId">
-            <span
-              class="action"
-              @click="
-                () => {
-                  deleteReviewId = item.review_id;
-                  deleteReviewDialogVisible = true;
-                }
-              "
-            >
-              <IconDelete /> 删除评论
-            </span>
-          </template>
-        </a-comment>
-      </a-space>
-    </template>
-    <template v-if="reviewArray == null || reviewArray.length == 0">
-      <a-empty> 暂无评论 </a-empty>
-    </template>
+    <a-spin
+      v-if="loadingReviews"
+      style="width: 100%"
+      :size="32"
+      tip="加载中，请稍后"
+    />
+    <a-space v-if="!loadingReviews" :size="0" direction="vertical" fill>
+      <a-typography-title style="font-weight: 550" :heading="3">
+        评论
+      </a-typography-title>
+      <template v-if="reviewArray != null">
+        <a-space :size="0" style="width: 100%" direction="vertical" fill>
+          <a-comment
+            v-for="item in reviewArray"
+            style="margin-top: 20px"
+            align="right"
+            :author="item.user_name"
+            :content="item.content"
+            :datetime="item.created_at"
+          >
+            <template #avatar>
+              <a-avatar
+                :imageUrl="item.avatar_url"
+                :size="32"
+                :style="{ marginRight: '8px' }"
+              >
+                <IconUser v-if="item.avatar_url == ''" />
+              </a-avatar>
+            </template>
+            <template #actions v-if="item.user_id == UserId">
+              <span
+                class="action"
+                @click="
+                  () => {
+                    deleteReviewId = item.review_id;
+                    deleteReviewDialogVisible = true;
+                  }
+                "
+              >
+                <IconDelete /> 删除评论
+              </span>
+            </template>
+          </a-comment>
+        </a-space>
+      </template>
+      <template v-if="reviewArray == null || reviewArray.length == 0">
+        <a-empty> 暂无评论 </a-empty>
+      </template>
+    </a-space>
   </a-space>
 
   <a-modal

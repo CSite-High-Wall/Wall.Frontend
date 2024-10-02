@@ -33,7 +33,9 @@ const dialogForm = ref({
 });
 
 onMounted(async () => {
-  if (!(await Validate())) router.push("/login");
+  if (!AuthState.value || !(await Validate())) {
+    router.push("/login");
+  }
 
   var result = await FetchUserExpression();
 
@@ -275,18 +277,18 @@ onMounted(async () => {
                 text-overflow: ellipsis;
               "
               @click="
-                  async () => {
-                    var result = await RemoveUserFromBlacklist(item.blocked_user_id);
-                    Message.info(result.message);
-                    
-                    if (result.success) {
-                      currentLocation.reload();
-                    }
+                async () => {
+                  var result = await RemoveUserFromBlacklist(
+                    item.blocked_user_id
+                  );
+                  Message.info(result.message);
+
+                  if (result.success) {
+                    currentLocation.reload();
                   }
-                "
-              >移除
-              <template #icon>
-                <IconDelete /> </template
+                }
+              "
+              >移除 <template #icon> <IconDelete /> </template
             ></a-link>
           </div>
         </a-card>

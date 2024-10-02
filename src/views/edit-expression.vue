@@ -4,6 +4,7 @@ import { useRoute, useRouter } from "vue-router";
 import { EditExpresssion, FetchTargetExpression } from "../api";
 import { Message } from "@arco-design/web-vue";
 import { Expression } from "../types";
+import { AuthState } from "../stores/auth";
 
 const router = useRouter();
 const route = useRoute();
@@ -32,6 +33,11 @@ const handleSubmit = async () => {
 };
 
 onMounted(async () => {
+  if (!AuthState.value) {
+    router.push("/login");
+    return
+  }
+
   var result = await FetchTargetExpression(Number(route.query?.expression_id));
 
   if (result.success) {
@@ -113,6 +119,7 @@ onMounted(async () => {
         正文
       </a-typography-title>
       <a-textarea
+        :max-length="800"
         v-model="form.content"
         placeholder="正文内容"
         show-word-limit

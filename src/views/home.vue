@@ -4,26 +4,37 @@ import { useRouter } from "vue-router";
 import { AddUserIntoBlacklist, FetchAllExpression } from "../api";
 import { Expression } from "../types.ts";
 import { onMounted, ref } from "vue";
-
-import "vue-waterfall-plugin-next/dist/style.css";
-import { UserId } from "../stores/auth.ts";
+import { AuthState, UserId } from "../stores/auth.ts";
 import { Message } from "@arco-design/web-vue";
 
-const currentLocation = location;
+import useClipboard from "vue-clipboard3";
+import "vue-waterfall-plugin-next/dist/style.css";
+
 const router = useRouter();
+const { toClipboard } = useClipboard();
+
+const currentLocation = location;
+const loading = ref(true);
 const dataArray = ref<Expression[] | null>(null);
 
 onMounted(async () => {
   var result = await FetchAllExpression();
 
-  if (result.success) {
-    dataArray.value = result.data as Expression[];
-  }
+  if (result.success) dataArray.value = result.data as Expression[];
+  else Message.info(result.data as string);
+
+  loading.value = false;
 });
 </script>
 
 <template>
   <main>
+    <a-spin
+      v-if="loading"
+      style="width: 100%"
+      :size="32"
+      tip="加载中，请稍后"
+    />
     <template v-if="dataArray != null">
       <Waterfall
         style="background-color: transparent"
@@ -46,15 +57,25 @@ onMounted(async () => {
         <template #default="{ item }">
           <a-card hoverable style="border-radius: var(--border-radius-large)">
             <template #actions>
-              <span class="action"> <IconShareInternal /> 分享 </span>
               <span
                 class="action"
-                v-if="item.user_id != UserId"
+                @click="
+                  async () => {
+                    await toClipboard(`${currentLocation.host}/expression?expression_id=${item.expression_id}`);
+                    Message.info('已复制分享链接');
+                  }
+                "
+              >
+                <IconShareInternal /> 分享
+              </span>
+              <span
+                class="action"
+                v-if="AuthState && item.user_id != UserId"
                 @click="
                   async () => {
                     var result = await AddUserIntoBlacklist(item.user_id);
                     Message.info(result.message);
-                    
+
                     if (result.success) {
                       currentLocation.reload();
                     }
@@ -79,7 +100,7 @@ onMounted(async () => {
               />
             </div> -->
             </template>
-            <a-card-meta :hoverable="true" :description="item.content">
+            <a-card-meta :hoverable="true">
               <template #title>
                 <a-link
                   style="font-weight: 600; font-size: large"
@@ -123,12 +144,22 @@ onMounted(async () => {
                   >
                 </div>
               </template>
+              <template #description>
+                <a-typography-paragraph
+                  :ellipsis="{
+                    rows: 4,
+                    showTooltip: true,
+                  }"
+                >
+                  {{ item.content }}
+                </a-typography-paragraph>
+              </template>
             </a-card-meta>
           </a-card>
         </template>
       </Waterfall>
     </template>
-    <template v-if="dataArray == null || dataArray.length == 0">
+    <template v-if="!loading && (dataArray == null || dataArray.length == 0)">
       <a-empty> 墙上还没有东西 </a-empty>
     </template>
   </main>
