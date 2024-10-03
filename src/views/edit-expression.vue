@@ -35,7 +35,7 @@ const handleSubmit = async () => {
 onMounted(async () => {
   if (!AuthState.value) {
     router.push("/login");
-    return
+    return;
   }
 
   var result = await FetchTargetExpression(Number(route.query?.expression_id));
@@ -96,6 +96,8 @@ onMounted(async () => {
       <a-col flex="auto">
         <a-layout-content style="display: block; margin: 0 auto">
           <a-input
+            show-word-limit
+            :max-length="50"
             v-model="form.title"
             size="large"
             placeholder="标题内容"

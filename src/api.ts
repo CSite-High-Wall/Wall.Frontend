@@ -12,6 +12,7 @@ import { UserId } from "./stores/auth";
 
 const instance = axios.create({
   baseURL: "http://47.98.245.204",
+  // baseURL: "http://localhost:8000",
   timeout: 60000,
 });
 
@@ -127,7 +128,8 @@ export async function FetchAllExpression() {
   try {
     var response = await instance.get(
       UserId.value != ""
-        ? "/api/community/expressions?enable_truncation=true&user_id=" + UserId.value
+        ? "/api/community/expressions?enable_truncation=true&user_id=" +
+            UserId.value
         : "/api/community/expressions?enable_truncation=true"
     );
     var list: Array<Expression> = new Array<Expression>();
@@ -399,18 +401,21 @@ export async function DeleteReview(reviewId: number) {
     return {
       success: false,
       message:
-        "删除指定评论失败, " + (err.code == "ECONNABORTED"
+        "删除指定评论失败, " +
+        (err.code == "ECONNABORTED"
           ? "连接出现错误"
           : err.response.data.message),
     };
   }
 }
 
-export async function UploadUserAvatarUrl(url: string) {
+export async function UploadUserAvatar(file: File) {
   try {
-    await instance.post(
-      "/api/profile/avatar/upload?avatar_url=" + url,
-      {},
+    await instance.putForm(
+      "/api/profile/avatar/upload",
+      {
+        image: file,
+      },
       {
         headers: { Authorization: "Bearer " + Cookie.getCookie("token") },
       }

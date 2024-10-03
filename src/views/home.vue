@@ -61,7 +61,9 @@ onMounted(async () => {
                 class="action"
                 @click="
                   async () => {
-                    await toClipboard(`${currentLocation.host}/expression?expression_id=${item.expression_id}`);
+                    await toClipboard(
+                      `${currentLocation.host}/expression?expression_id=${item.expression_id}`
+                    );
                     Message.info('已复制分享链接');
                   }
                 "
@@ -103,7 +105,12 @@ onMounted(async () => {
             <a-card-meta :hoverable="true">
               <template #title>
                 <a-link
-                  style="font-weight: 600; font-size: large"
+                  style="
+                    font-weight: 600;
+                    font-size: large;
+                    text-wrap: wrap;
+                    max-lines: 1;
+                  "
                   @click="
                     () => {
                       router.push({
@@ -114,8 +121,9 @@ onMounted(async () => {
                       });
                     }
                   "
-                  >{{ item.title }}</a-link
                 >
+                  {{ item.title }}
+                </a-link>
               </template>
               <template #avatar>
                 <div

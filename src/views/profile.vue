@@ -13,7 +13,7 @@ import {
   FetchUserExpression,
   RemoveUserFromBlacklist,
   SignOut,
-  UploadUserAvatarUrl,
+  UploadUserAvatar,
   Validate,
 } from "../api";
 import { BlacklistItem, Expression } from "../types";
@@ -24,13 +24,11 @@ const authStore = useAuthStore();
 const router = useRouter();
 const currentLocation = location;
 
+const avatarFile = ref();
+const uploadRef = ref();
 const editAvatarDialogVisible = ref(false);
 const expressionArray = ref<Expression[] | null>(null);
 const blacklistItemArray = ref<BlacklistItem[] | null>(null);
-
-const dialogForm = ref({
-  url: "",
-});
 
 onMounted(async () => {
   if (!AuthState.value || !(await Validate())) {
@@ -48,6 +46,17 @@ onMounted(async () => {
     blacklistItemArray.value = blacklistResult.data as BlacklistItem[];
   else Message.info(blacklistResult.data as string);
 });
+
+const onChange = (_: any, currentFile: any) => {
+  if (currentFile.file.size > 131072) {
+    Message.info("不接受的文件大小，图片大小应小于 128 KB");
+    return;
+  }
+
+  avatarFile.value = {
+    ...currentFile,
+  };
+};
 </script>
 
 <template>
@@ -115,7 +124,7 @@ onMounted(async () => {
             "
             style="border-radius: var(--border-radius-medium)"
             type="primary"
-            >上传网络图片头像</a-button
+            >上传头像图片</a-button
           >
           <a-button style="border-radius: var(--border-radius-medium)" disabled
             >修改用户名</a-button
@@ -303,16 +312,15 @@ onMounted(async () => {
   <a-modal
     width="auto"
     v-model:visible="editAvatarDialogVisible"
-    title="上传网络图片"
+    title="上传头像图片"
     @ok="
       async () => {
-        var result = await UploadUserAvatarUrl(dialogForm.url);
+        var result = await UploadUserAvatar(avatarFile.file);
         Message.info(result.message);
 
         editAvatarDialogVisible = false;
 
         if (result.success) {
-          AvatarUrl = dialogForm.url;
           currentLocation.reload();
         }
       }
@@ -320,16 +328,79 @@ onMounted(async () => {
     @cancel="
       () => {
         editAvatarDialogVisible = false;
+        avatarFile = undefined;
       }
     "
     :ok-button-props="{
-      disabled: dialogForm.url == '',
+      disabled: avatarFile == null || avatarFile.status != 'init',
     }"
   >
-    <a-form :model="dialogForm">
-      <a-form-item field="url" label="Url">
-        <a-input id="input" allowClear v-model="dialogForm.url" />
-      </a-form-item>
-    </a-form>
+    <a-space direction="vertical" fill>
+      <a-upload
+        ref="uploadRef"
+        action="http://localhost:8000/api/profile/avatar/upload"
+        :auto-upload="false"
+        :fileList="avatarFile ? [avatarFile] : []"
+        :show-file-list="false"
+        :show-remove-button="true"
+        @change="onChange"
+        style="width: 100%"
+      >
+        <template #upload-button>
+          <div
+            :class="`arco-upload-list-item${
+              avatarFile && avatarFile.status === 'error'
+                ? ' arco-upload-list-item-error'
+                : ''
+            }`"
+            style="display: block; margin-top: 0"
+          >
+            <div
+              class="arco-upload-list-picture custom-upload-avatar"
+              v-if="avatarFile && avatarFile.url"
+            >
+              <img :src="avatarFile.url" />
+              <div class="arco-upload-list-picture-mask">
+                <IconEdit />
+              </div>
+              <a-progress
+                v-if="
+                  avatarFile.status === 'uploading' && avatarFile.percent < 100
+                "
+                :percent="avatarFile.percent"
+                type="circle"
+                size="large"
+                :style="{
+                  position: 'absolute',
+                  left: '50%',
+                  top: '50%',
+                  transform: 'translateX(-50%) translateY(-50%)',
+                }"
+              />
+            </div>
+            <div class="arco-upload-picture-card" v-else>
+              <div class="arco-upload-picture-card-text">
+                <IconPlus />
+                <div style="margin: 10px 10px 0px 10px; font-weight: 600">
+                  上传图片文件<br>（文件小于 128 KB）
+                </div>
+              </div>
+            </div>
+          </div>
+        </template>
+      </a-upload>
+      <a-button
+        type="primary"
+        v-if="avatarFile != null && avatarFile.status == 'init'"
+        style="border-radius: var(--border-radius-medium)"
+        @click="avatarFile = undefined"
+      >
+        <template #icon>
+          <icon-delete />
+        </template>
+        <!-- Use the default slot to avoid extra spaces -->
+        <template #default>移除已上传的文件</template>
+      </a-button>
+    </a-space>
   </a-modal>
 </template>
