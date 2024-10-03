@@ -7,6 +7,7 @@ import {
   LastLoginTime,
   useAuthStore,
   UserName,
+  UserNickName,
 } from "../stores/auth";
 import {
   FetchUserBlacklist,
@@ -29,6 +30,8 @@ const uploadRef = ref();
 const editAvatarDialogVisible = ref(false);
 const expressionArray = ref<Expression[] | null>(null);
 const blacklistItemArray = ref<BlacklistItem[] | null>(null);
+const UserNameChangeVisible = ref(false);
+const ChangedUserName = ref("test");
 
 onMounted(async () => {
   if (!AuthState.value || !(await Validate())) {
@@ -57,6 +60,20 @@ const onChange = (_: any, currentFile: any) => {
     ...currentFile,
   };
 };
+const ChangeUserNameClick = () => {
+  UserNameChangeVisible.value = true;
+  ChangedUserName.value = "";
+};
+const ChangeUserNameOk = async () => {
+  UserNameChangeVisible.value = false;
+  if(ChangedUserName.value === "")
+    Message.info("用户名不能为空");
+  else
+    UserNickName.value = ChangedUserName.value;
+}
+const ChangeUserNameCancel = () => {
+  UserNameChangeVisible.value = false;
+}
 </script>
 
 <template>
@@ -100,7 +117,7 @@ const onChange = (_: any, currentFile: any) => {
               text-overflow: ellipsis;
               font-weight: 550;
             "
-            >{{ UserName }}</a-typography-text
+            >{{ UserNickName }}</a-typography-text
           >
           <a-typography-text
             type="secondary"
@@ -126,9 +143,15 @@ const onChange = (_: any, currentFile: any) => {
             type="primary"
             >上传头像图片</a-button
           >
-          <a-button style="border-radius: var(--border-radius-medium)" disabled
-            >修改用户名</a-button
-          >
+          <a-button style="border-radius: var(--border-radius-medium)" @click="ChangeUserNameClick">修改用户名</a-button>
+          <a-modal v-model:visible="UserNameChangeVisible"
+            @ok="ChangeUserNameOk"
+            @cancel="ChangeUserNameCancel">
+            <template #title>修改用户名</template>
+            <div>
+              <a-input v-model="ChangedUserName" placeholder="请输入新的用户名" />
+            </div>
+          </a-modal>
         </a-space>
         <a-button
           style="border-radius: var(--border-radius-medium)"

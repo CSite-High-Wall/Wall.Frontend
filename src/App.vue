@@ -1,7 +1,7 @@
 <script setup lang="ts">
 import { ref } from "vue";
 import { useRouter, RouterView } from "vue-router";
-import { AuthState, AvatarUrl, UserName } from "./stores/auth.ts";
+import { AuthState, AvatarUrl, UserNickName } from "./stores/auth.ts";
 
 const router = useRouter();
 
@@ -104,7 +104,7 @@ router.beforeEach((to) => {
                   text-overflow: ellipsis;
                   font-weight: 550;
                 "
-                >{{ UserName }}</a-typography-text
+                >{{ UserNickName }}</a-typography-text
               >
             </div>
           </template>

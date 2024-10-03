@@ -10,6 +10,7 @@ export const AvatarUrl = ref("");
 export const UserId = ref("");
 export const CreatedAt = ref("");
 export const LastLoginTime = ref("");
+export const UserNickName = ref("");
 
 export const useAuthStore = defineStore("auth", {
   state: () => {
@@ -26,6 +27,7 @@ export const useAuthStore = defineStore("auth", {
 export function ClearUserInfo() {
   UserId.value = ""
   UserName.value = "null"
+  UserNickName.value = "test"
   AvatarUrl.value = ""
   CreatedAt.value = ""
   LastLoginTime.value = ""
@@ -39,6 +41,7 @@ export async function RefreshUserInfo() {
 
     UserId.value =response.data.data.user_id
     UserName.value = response.data.data.user_name
+    UserNickName.value = "test"
     AvatarUrl.value = response.data.data.avatar_url
     CreatedAt.value = response.data.data.created_at
     LastLoginTime.value =  new Date(response.data.data.last_login_time).toLocaleString()
