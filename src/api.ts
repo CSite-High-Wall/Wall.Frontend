@@ -1,14 +1,17 @@
 import axios from "axios";
 import Cookie from "../src/cookie";
+
 import {
   Expression,
   CreateExpression,
   Review,
   CreateReview,
-  BlacklistItem,
-  CreateBlacklistItem,
+  BlacklistUserItem,
+  CreateBlacklisttUserItem,
+  CreateBlacklistExpressionItem,
+  BlacklistExpressionItem,
 } from "./types";
-import { UserId } from "./stores/auth";
+import { AuthState, UserId } from "./stores/auth";
 
 const instance = axios.create({
   baseURL: "http://47.98.245.204",
@@ -126,12 +129,14 @@ export async function SignOut() {
 
 export async function FetchAllExpression() {
   try {
-    var response = await instance.get(
-      UserId.value != ""
-        ? "/api/community/expressions?enable_truncation=true&user_id=" +
-            UserId.value
-        : "/api/community/expressions?enable_truncation=true"
-    );
+    var response = AuthState
+      ? await instance.get(
+          "/api/community/expressions?enable_truncation=true",
+          {
+            headers: { Authorization: "Bearer " + Cookie.getCookie("token") },
+          }
+        )
+      : await instance.get("/api/community/expressions?enable_truncation=true");
     var list: Array<Expression> = new Array<Expression>();
 
     response.data.data.expression_list.forEach((element: any) => {
@@ -238,13 +243,13 @@ export async function FetchUserExpression() {
 
 export async function FetchUserBlacklist() {
   try {
-    var response = await instance.get("/api/profile/blacklist/get", {
+    var response = await instance.get("/api/profile/user-blacklist/get", {
       headers: { Authorization: "Bearer " + Cookie.getCookie("token") },
     });
-    var list: Array<BlacklistItem> = new Array<BlacklistItem>();
+    var list: Array<BlacklistUserItem> = new Array<BlacklistUserItem>();
 
     response.data.data.blacklist.forEach((element: any) => {
-      list.push(CreateBlacklistItem(element));
+      list.push(CreateBlacklisttUserItem(element));
     });
 
     return {
@@ -256,6 +261,30 @@ export async function FetchUserBlacklist() {
     return {
       success: false,
       data: "获取屏蔽用户列表失败",
+    };
+  }
+}
+
+export async function FetchExpressionBlacklist() {
+  try {
+    var response = await instance.get("/api/profile/expression-blacklist/get", {
+      headers: { Authorization: "Bearer " + Cookie.getCookie("token") },
+    });
+    var list: Array<BlacklistExpressionItem> = new Array<BlacklistExpressionItem>();
+
+    response.data.data.blacklist.forEach((element: any) => {
+      list.push(CreateBlacklistExpressionItem(element));
+    });
+
+    return {
+      success: true,
+      data: list,
+    };
+  } catch (err) {
+    console.log(err);
+    return {
+      success: false,
+      data: "获取屏蔽帖子列表失败",
     };
   }
 }
@@ -409,6 +438,64 @@ export async function DeleteReview(reviewId: number) {
   }
 }
 
+export async function EditNickName(nickName: string) {
+  try {
+    console.log(encodeURIComponent(nickName));
+    await instance.post(
+      "/api/profile/nickname/edit?nick_name=" + encodeURIComponent(nickName),
+      {},
+      {
+        headers: { Authorization: "Bearer " + Cookie.getCookie("token") },
+      }
+    );
+
+    return {
+      success: true,
+      message: "修改成功",
+    };
+  } catch (err: any) {
+    console.log(err);
+    return {
+      success: false,
+      message:
+        "修改用户昵称失败, " +
+        (err.code == "ECONNABORTED"
+          ? "连接出现错误"
+          : err.response.data.message),
+    };
+  }
+}
+
+export async function ChangePassword(oldPassword: string, newPassword: string) {
+  try {
+    await instance.post(
+      "/api/profile/password/change",
+      {
+        old_password: oldPassword,
+        new_password: newPassword,
+      },
+      {
+        headers: { Authorization: "Bearer " + Cookie.getCookie("token") },
+      }
+    );
+
+    return {
+      success: true,
+      message: "修改密码成功，请重新登录",
+    };
+  } catch (err: any) {
+    console.log(err);
+    return {
+      success: false,
+      message:
+        "修改密码失败，" +
+        (err.code == "ECONNABORTED"
+          ? "连接出现错误"
+          : err.response.data.message),
+    };
+  }
+}
+
 export async function UploadUserAvatar(file: File) {
   try {
     await instance.putForm(
@@ -441,7 +528,7 @@ export async function UploadUserAvatar(file: File) {
 export async function AddUserIntoBlacklist(userId: string) {
   try {
     await instance.post(
-      "/api/profile/blacklist/add?blocked_user_id=" + userId,
+      "/api/profile/user-blacklist/add?blocked_user_id=" + userId,
       {},
       {
         headers: { Authorization: "Bearer " + Cookie.getCookie("token") },
@@ -468,7 +555,7 @@ export async function AddUserIntoBlacklist(userId: string) {
 export async function RemoveUserFromBlacklist(userId: string) {
   try {
     await instance.delete(
-      "/api/profile/blacklist/remove?blocked_user_id=" + userId,
+      "/api/profile/user-blacklist/remove?blocked_user_id=" + userId,
       {
         headers: { Authorization: "Bearer " + Cookie.getCookie("token") },
       }
@@ -491,4 +578,56 @@ export async function RemoveUserFromBlacklist(userId: string) {
   }
 }
 
+export async function AddExpressionIntoBlacklist(expressionId: number) {
+  try {
+    await instance.post(
+      "/api/profile/expression-blacklist/add?blocked_expression_id=" + String(expressionId),
+      {},
+      {
+        headers: { Authorization: "Bearer " + Cookie.getCookie("token") },
+      }
+    );
+
+    return {
+      success: true,
+      message: "屏蔽帖子成功",
+    };
+  } catch (err: any) {
+    console.log(err);
+    return {
+      success: false,
+      message:
+        "屏蔽帖子失败，" +
+        (err.code == "ECONNABORTED"
+          ? "连接出现错误"
+          : err.response.data.message),
+    };
+  }
+}
+
+export async function RemoveExpressionFromBlacklist(expressionId: number) {
+  try {
+    await instance.delete(
+      "/api/profile/expression-blacklist/remove?blocked_expression_id=" + String(expressionId),
+      {
+        headers: { Authorization: "Bearer " + Cookie.getCookie("token") },
+      }
+    );
+
+    return {
+      success: true,
+      message: "移除屏蔽帖子成功",
+    };
+  } catch (err: any) {
+    console.log(err);
+    return {
+      success: false,
+      message:
+        "移除屏蔽贴子失败，" +
+        (err.code == "ECONNABORTED"
+          ? "连接出现错误"
+          : err.response.data.message),
+    };
+  }
+}
 export default instance;

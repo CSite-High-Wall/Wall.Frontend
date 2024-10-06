@@ -48,19 +48,35 @@ export function CreateReview(data: any) {
   return expression;
 }
 
-export type BlacklistItem = {
+export type BlacklistUserItem = {
   owner_user_id: string,
   blocked_user_id: string,
   blocked_user_name: string,
   blocked_user_avatar_url: string
 }
 
-export function CreateBlacklistItem(data: any) {
-  var blacklistItem: BlacklistItem = {
+export function CreateBlacklisttUserItem(data: any) {
+  var blacklistItem: BlacklistUserItem = {
     owner_user_id: data.owner_user_id,
     blocked_user_id: data.blocked_user_id,
     blocked_user_name: data.blocked_user_name,
     blocked_user_avatar_url: data.blocked_user_avatar_url
+  };
+
+  return blacklistItem;
+}
+
+export type BlacklistExpressionItem = {
+  owner_user_id: string,
+  blocked_expression_id: number,
+  blocked_expression_title: string
+}
+
+export function CreateBlacklistExpressionItem(data: any) {
+  var blacklistItem: BlacklistExpressionItem = {
+    owner_user_id: data.owner_user_id,
+    blocked_expression_id: data.blocked_expression_id,
+    blocked_expression_title: data.blocked_expression_title
   };
 
   return blacklistItem;

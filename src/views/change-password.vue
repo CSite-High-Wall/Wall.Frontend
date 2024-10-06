@@ -2,19 +2,26 @@
 import { ref } from "vue";
 import { useRouter } from "vue-router";
 import { Message } from "@arco-design/web-vue";
-import { Register } from "../api.ts";
+import { ChangePassword } from "../api.ts";
+import { ClearUserInfo, useAuthStore } from "../stores/auth.ts";
+
+const authStore = useAuthStore();
 
 const form = ref({
-  username: "",
-  password: "",
+  old_password: "",
+  new_password: "",
   confirm_password: "",
 });
 
 const handleSubmit = async () => {
-  var result = await Register(form.value.username, form.value.password);
+  var result = await ChangePassword(
+    form.value.old_password,
+    form.value.new_password
+  );
   Message.info(result.message);
-
   if (result.success) {
+    ClearUserInfo();
+    authStore.setAuthState(false);
     router.push("/login");
   }
 };
@@ -26,27 +33,27 @@ const router = useRouter();
     <a-layout>
       <a-layout-header>
         <a-typography-title style="padding-bottom: 10px; font-weight: 550">
-          注册账户
+          修改账号密码
         </a-typography-title>
       </a-layout-header>
       <a-layout-content>
         <a-space style="width: 100%" :size="15" direction="vertical">
-          <a-input
+          <a-input-password
             size="large"
-            v-model="form.username"
-            placeholder="用户名"
+            v-model="form.old_password"
+            placeholder="旧密码"
             allow-clear
           />
           <a-input-password
             size="large"
-            v-model="form.password"
-            placeholder="密码"
+            v-model="form.new_password"
+            placeholder="新密码"
             allow-clear
           />
           <a-input-password
             size="large"
             v-model="form.confirm_password"
-            placeholder="确认你的密码"
+            placeholder="确认新密码"
             allow-clear
           />
         </a-space>
@@ -62,28 +69,15 @@ const router = useRouter();
             size="large"
             type="primary"
             :disabled="
-              form.username == '' ||
-              form.password == '' ||
-              form.confirm_password != form.password
+              form.old_password == '' ||
+              form.new_password == '' ||
+              form.confirm_password != form.new_password
             "
           >
-            注册
+            修改
           </a-button>
-          <a-link
-            size="large"
-            style="
-              font-size: medium;
-              border-radius: var(--border-radius-medium);
-              padding: 3px 10px 3px 10px;
-            "
-            @click="router.push('/login')"
-          >
-            已有帐户？转到登录
-          </a-link>
         </a-space>
       </a-layout-footer>
     </a-layout>
   </div>
 </template>
-
-<style></style>

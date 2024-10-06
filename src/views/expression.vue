@@ -3,6 +3,7 @@ import { useRoute, useRouter } from "vue-router";
 import { AuthState, AvatarUrl, UserId } from "../stores/auth.ts";
 import { onMounted, ref } from "vue";
 import {
+  AddExpressionIntoBlacklist,
   AddUserIntoBlacklist,
   DeleteExpression,
   DeleteReview,
@@ -149,14 +150,29 @@ const deleteReviewId = ref(-1);
       <a-space v-else-if="AuthState">
         <span
           class="action"
-          v-if="expression!.user_id != UserId"
+          @click="
+            async () => {
+              var result = await AddExpressionIntoBlacklist(expression!.expression_id);
+              Message.info(result.message);
+
+              if (result.success) {
+                router.push('/home');
+              }
+            }
+          "
+        >
+          <IconStop /> 屏蔽此贴
+        </span>
+        <span
+          class="action"
+          v-if="expression!.user_id != '00000000-0000-0000-0000-000000000000' && expression!.user_id != UserId"
           @click="
             async () => {
               var result = await AddUserIntoBlacklist(expression!.user_id);
               Message.info(result.message);
 
               if (result.success) {
-                currentLocation.reload();
+                router.push('/home');
               }
             }
           "

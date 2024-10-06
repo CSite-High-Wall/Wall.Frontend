@@ -1,7 +1,11 @@
 <script setup lang="ts">
 import { Waterfall } from "vue-waterfall-plugin-next";
 import { useRouter } from "vue-router";
-import { AddUserIntoBlacklist, FetchAllExpression } from "../api";
+import {
+  AddExpressionIntoBlacklist,
+  AddUserIntoBlacklist,
+  FetchAllExpression,
+} from "../api";
 import { Expression } from "../types.ts";
 import { onMounted, ref } from "vue";
 import { AuthState, UserId } from "../stores/auth.ts";
@@ -70,37 +74,54 @@ onMounted(async () => {
               >
                 <IconShareInternal /> 分享
               </span>
-              <span
-                class="action"
+              <a-popover
+                style="padding: 0"
+                position="br"
                 v-if="AuthState && item.user_id != UserId"
-                @click="
-                  async () => {
-                    var result = await AddUserIntoBlacklist(item.user_id);
-                    Message.info(result.message);
-
-                    if (result.success) {
-                      currentLocation.reload();
-                    }
-                  }
-                "
               >
-                <IconStop /> 屏蔽
-              </span>
-            </template>
-            <template #cover>
-              <!-- <div
-              :style="{
-                height: '204px',
-                overflow: 'hidden',
-              }"
-            >
-              <img
-                style="border-radius: 8px"
-                :style="{ width: '100%' }"
-                alt="dessert"
-                src="https://picsum.photos/200"
-              />
-            </div> -->
+                <span class="action"> <IconStop /> 屏蔽 </span>
+                <template #content>
+                  <a-space direction="vertical">
+                    <span
+                      class="action"
+                      v-if="
+                        item.user_id !=
+                          '00000000-0000-0000-0000-000000000000' &&
+                        item.user_id != UserId
+                      "
+                      @click="
+                        async () => {
+                          var result = await AddUserIntoBlacklist(item.user_id);
+                          Message.info(result.message);
+
+                          if (result.success) {
+                            currentLocation.reload();
+                          }
+                        }
+                      "
+                    >
+                      <IconStop /> 屏蔽此人
+                    </span>
+                    <span
+                      class="action"
+                      @click="
+                        async () => {
+                          var result = await AddExpressionIntoBlacklist(
+                            item.expression_id
+                          );
+                          Message.info(result.message);
+
+                          if (result.success) {
+                            currentLocation.reload();
+                          }
+                        }
+                      "
+                    >
+                      <IconStop /> 屏蔽此贴
+                    </span>
+                  </a-space>
+                </template>
+              </a-popover>
             </template>
             <a-card-meta :hoverable="true">
               <template #title>
@@ -142,7 +163,7 @@ onMounted(async () => {
                   </a-avatar>
                   <a-typography-text
                     style="
-                      max-width: 90px;
+                      max-width: 150px;
                       overflow: hidden;
                       white-space: nowrap;
                       text-overflow: ellipsis;

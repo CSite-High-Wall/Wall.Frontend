@@ -1,7 +1,7 @@
 <script setup lang="ts">
 import { ref } from "vue";
 import { useRouter, RouterView } from "vue-router";
-import { AuthState, AvatarUrl, UserNickName } from "./stores/auth.ts";
+import { AuthState, AvatarUrl, NickName } from "./stores/auth.ts";
 
 const router = useRouter();
 
@@ -83,6 +83,7 @@ router.beforeEach((to) => {
 
           <template v-if="AuthState" #extra>
             <div
+              class="avatar-area"
               :style="{
                 display: 'flex',
                 alignItems: 'center',
@@ -98,13 +99,13 @@ router.beforeEach((to) => {
               </a-avatar>
               <a-typography-text
                 style="
-                  max-width: 90px;
+                  max-width: 150px;
                   overflow: hidden;
                   white-space: nowrap;
                   text-overflow: ellipsis;
                   font-weight: 550;
                 "
-                >{{ UserNickName }}</a-typography-text
+                >{{ NickName }}</a-typography-text
               >
             </div>
           </template>
@@ -172,10 +173,10 @@ router.beforeEach((to) => {
 }
 
 .avatar-area {
-  margin-top: 0px;
+  margin-top: 10px;
 }
 
-@media (min-width: 429px) {
+@media (min-width: 440px) {
   .avatar-area {
     margin-top: 0px;
   }

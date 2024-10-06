@@ -6,18 +6,25 @@ import {
   ClearUserInfo,
   LastLoginTime,
   useAuthStore,
+  NickName,
   UserName,
-  UserNickName,
 } from "../stores/auth";
 import {
+  EditNickName,
+  FetchExpressionBlacklist,
   FetchUserBlacklist,
   FetchUserExpression,
+  RemoveExpressionFromBlacklist,
   RemoveUserFromBlacklist,
   SignOut,
   UploadUserAvatar,
   Validate,
 } from "../api";
-import { BlacklistItem, Expression } from "../types";
+import {
+  BlacklistUserItem,
+  BlacklistExpressionItem,
+  Expression,
+} from "../types";
 import { useRouter } from "vue-router";
 import { Message } from "@arco-design/web-vue";
 
@@ -29,9 +36,10 @@ const avatarFile = ref();
 const uploadRef = ref();
 const editAvatarDialogVisible = ref(false);
 const expressionArray = ref<Expression[] | null>(null);
-const blacklistItemArray = ref<BlacklistItem[] | null>(null);
-const UserNameChangeVisible = ref(false);
-const ChangedUserName = ref("test");
+const UserBlacklist = ref<BlacklistUserItem[] | null>(null);
+const ExpressionBlacklist = ref<BlacklistExpressionItem[] | null>(null);
+const NickNameChangeVisible = ref(false);
+const ChangedNickName = ref("");
 
 onMounted(async () => {
   if (!AuthState.value || !(await Validate())) {
@@ -43,11 +51,18 @@ onMounted(async () => {
   if (result.success) expressionArray.value = result.data as Expression[];
   else Message.info(result.data as string);
 
-  var blacklistResult = await FetchUserBlacklist();
+  var userBlacklistResult = await FetchUserBlacklist();
 
-  if (blacklistResult.success)
-    blacklistItemArray.value = blacklistResult.data as BlacklistItem[];
-  else Message.info(blacklistResult.data as string);
+  if (userBlacklistResult.success)
+    UserBlacklist.value = userBlacklistResult.data as BlacklistUserItem[];
+  else Message.info(userBlacklistResult.data as string);
+
+  var expressionBlacklistResult = await FetchExpressionBlacklist();
+
+  if (expressionBlacklistResult.success)
+    ExpressionBlacklist.value =
+      expressionBlacklistResult.data as BlacklistExpressionItem[];
+  else Message.info(expressionBlacklistResult.data as string);
 });
 
 const onChange = (_: any, currentFile: any) => {
@@ -60,20 +75,30 @@ const onChange = (_: any, currentFile: any) => {
     ...currentFile,
   };
 };
-const ChangeUserNameClick = () => {
-  UserNameChangeVisible.value = true;
-  ChangedUserName.value = "";
+const ChangeNickNameClick = () => {
+  NickNameChangeVisible.value = true;
+  ChangedNickName.value = "";
 };
-const ChangeUserNameOk = async () => {
-  UserNameChangeVisible.value = false;
-  if(ChangedUserName.value === "")
-    Message.info("用户名不能为空");
-  else
-    UserNickName.value = ChangedUserName.value;
-}
-const ChangeUserNameCancel = () => {
-  UserNameChangeVisible.value = false;
-}
+const ChangeNickNameOk = async () => {
+  if (ChangedNickName.value === "") {
+    NickNameChangeVisible.value = false;
+    Message.info("昵称不能为空");
+    return;
+  }
+
+  var result = await EditNickName(ChangedNickName.value);
+  Message.info(result.message);
+
+  NickNameChangeVisible.value = false;
+
+  if (result.success) {
+    NickName.value = ChangedNickName.value;
+    currentLocation.reload();
+  }
+};
+const ChangeNickNameCancel = () => {
+  NickNameChangeVisible.value = false;
+};
 </script>
 
 <template>
@@ -109,16 +134,31 @@ const ChangeUserNameCancel = () => {
           <IconUser v-if="AvatarUrl == ''" />
         </a-avatar>
         <a-space style="margin-left: 10px" direction="vertical" :size="0">
-          <a-typography-text
-            style="
-              font-size: large;
-              overflow: hidden;
-              white-space: nowrap;
-              text-overflow: ellipsis;
-              font-weight: 550;
-            "
-            >{{ UserNickName }}</a-typography-text
-          >
+          <div style="flex-direction: column; display: inline-flex">
+            <a-typography-text
+              style="
+                font-size: large;
+                overflow: hidden;
+                white-space: nowrap;
+                text-overflow: ellipsis;
+                font-weight: 550;
+              "
+              >{{ NickName }}</a-typography-text
+            >
+            <a-typography-text
+              type="secondary"
+              style="
+                margin-top: -3px;
+                font-size: smaller;
+                overflow: hidden;
+                white-space: nowrap;
+                text-overflow: ellipsis;
+                font-weight: 550;
+              "
+              >{{ UserName }}</a-typography-text
+            >
+          </div>
+
           <a-typography-text
             type="secondary"
             style="
@@ -131,28 +171,29 @@ const ChangeUserNameCancel = () => {
           >
         </a-space>
       </div>
-      <a-space direction="vertical">
-        <a-space>
-          <a-button
-            @click="
-              () => {
-                editAvatarDialogVisible = true;
-              }
-            "
-            style="border-radius: var(--border-radius-medium)"
-            type="primary"
-            >上传头像图片</a-button
-          >
-          <a-button style="border-radius: var(--border-radius-medium)" @click="ChangeUserNameClick">修改用户名</a-button>
-          <a-modal v-model:visible="UserNameChangeVisible"
-            @ok="ChangeUserNameOk"
-            @cancel="ChangeUserNameCancel">
-            <template #title>修改用户名</template>
-            <div>
-              <a-input v-model="ChangedUserName" placeholder="请输入新的用户名" />
-            </div>
-          </a-modal>
-        </a-space>
+      <a-space wrap>
+        <a-button
+          style="border-radius: var(--border-radius-medium)"
+          type="primary"
+          @click="ChangeNickNameClick"
+          >修改用户昵称</a-button
+        >
+        <a-button
+          style="border-radius: var(--border-radius-medium)"
+          type="primary"
+          @click="
+            () => {
+              editAvatarDialogVisible = true;
+            }
+          "
+          >上传头像图片</a-button
+        >
+        <a-button
+          style="border-radius: var(--border-radius-medium)"
+          type="primary"
+          @click="router.push('/change-password')"
+          >修改账号密码</a-button
+        >
         <a-button
           style="border-radius: var(--border-radius-medium)"
           type="primary"
@@ -255,7 +296,7 @@ const ChangeUserNameCancel = () => {
       </a-typography-title>
       <a-space style="width: 100%" direction="vertical" fill>
         <a-card
-          v-for="item in blacklistItemArray"
+          v-for="item in UserBlacklist"
           style="width: 100%; border-radius: var(--border-radius-large)"
           hoverable
         >
@@ -324,10 +365,75 @@ const ChangeUserNameCancel = () => {
             ></a-link>
           </div>
         </a-card>
-        <template
-          v-if="blacklistItemArray == null || blacklistItemArray.length == 0"
-        >
+        <template v-if="UserBlacklist == null || UserBlacklist.length == 0">
           <a-empty> 还没有屏蔽过任何人 </a-empty>
+        </template>
+      </a-space>
+      <a-typography-title
+        :heading="3"
+        style="font-weight: 550; margin-top: 20px"
+      >
+        已屏蔽帖子
+      </a-typography-title>
+      <a-space style="width: 100%" direction="vertical" fill>
+        <a-card
+          v-for="item in ExpressionBlacklist"
+          style="width: 100%; border-radius: var(--border-radius-large)"
+          hoverable
+        >
+          <div
+            :style="{
+              display: 'flex',
+              alignItems: 'center',
+              justifyContent: 'space-between',
+            }"
+          >
+            <span
+              :style="{
+                display: 'flex',
+                alignItems: 'center',
+                color: '#1D2129',
+              }"
+            >
+              <a-space>
+                <a-typography-text
+                  style="
+                    font-size: smaller;
+                    overflow: hidden;
+                    white-space: nowrap;
+                    text-overflow: ellipsis;
+                  "
+                  >{{ item.blocked_expression_title }}</a-typography-text
+                >
+              </a-space>
+            </span>
+            <a-link
+              style="
+                font-size: smaller;
+                overflow: hidden;
+                white-space: nowrap;
+                text-overflow: ellipsis;
+              "
+              @click="
+                async () => {
+                  var result = await RemoveExpressionFromBlacklist(
+                    item.blocked_expression_id
+                  );
+                  Message.info(result.message);
+
+                  if (result.success) {
+                    currentLocation.reload();
+                  }
+                }
+              "
+              >移除 <template #icon> <IconDelete /> </template
+            ></a-link>
+          </div>
+        </a-card>
+        <template
+          v-if="ExpressionBlacklist == null || ExpressionBlacklist.length == 0"
+        >
+          <a-empty> 还没有屏蔽过任何帖子 </a-empty>
         </template>
       </a-space>
     </a-space>
@@ -405,7 +511,7 @@ const ChangeUserNameCancel = () => {
               <div class="arco-upload-picture-card-text">
                 <IconPlus />
                 <div style="margin: 10px 10px 0px 10px; font-weight: 600">
-                  上传图片文件<br>（文件小于 128 KB）
+                  上传图片文件<br />（文件小于 128 KB）
                 </div>
               </div>
             </div>
@@ -425,5 +531,22 @@ const ChangeUserNameCancel = () => {
         <template #default>移除已上传的文件</template>
       </a-button>
     </a-space>
+  </a-modal>
+  <a-modal
+    width="auto"
+    title="修改用户昵称"
+    v-model:visible="NickNameChangeVisible"
+    @ok="ChangeNickNameOk"
+    @cancel="ChangeNickNameCancel"
+    :ok-button-props="{
+      disabled: ChangedNickName == '',
+    }"
+  >
+    <a-input
+      v-model="ChangedNickName"
+      placeholder="请输入昵称"
+      show-word-limit
+      :max-length="30"
+    />
   </a-modal>
 </template>

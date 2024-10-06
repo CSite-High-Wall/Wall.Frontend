@@ -7,6 +7,7 @@ import Profile from "../views/profile.vue";
 import Expression from "../views/expression.vue";
 import Publish from "../views/publish.vue"
 import EditExpression from "../views/edit-expression.vue";
+import ChangePassword from "../views/change-password.vue";
 
 const routes = [
   {
@@ -47,6 +48,11 @@ const routes = [
     path: "/edit-expression",
     name: "EditExpression",
     component: EditExpression
+  },
+  {
+    path: "/change-password",
+    name: "ChangePassword",
+    component: ChangePassword
   }
 ];
 
