@@ -8,6 +8,7 @@ import Expression from "../views/expression.vue";
 import Publish from "../views/publish.vue"
 import EditExpression from "../views/edit-expression.vue";
 import ChangePassword from "../views/change-password.vue";
+import { AuthState } from "../stores/auth.ts";
 
 const routes = [
   {
@@ -59,6 +60,14 @@ const routes = [
 const router = createRouter({
   history: createWebHistory(),
   routes,
+});
+
+router.beforeEach(async (to, from) => {
+  if( to.name !== 'Login' && to.name !== 'Register' && to.name !== 'Home' && to.name !== 'Expression' )
+  {
+    if( !AuthState.value )
+      return { name: 'Login' }
+  }
 });
 
 export default router;

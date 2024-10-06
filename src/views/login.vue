@@ -48,6 +48,7 @@ const handleSubmit = async () => {
             v-model="form.password"
             placeholder="密码"
             allow-clear
+            @keyup.enter="handleSubmit"
           />
         </a-space>
       </a-layout-content>
