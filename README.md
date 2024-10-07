@@ -19,3 +19,8 @@
 
 ### 部署
 将项目编译到静态文件 `npm run build` ，后上传服务器，在服务器部署 nginx 反代实现
+
+### 贡献者
+<a href="https://github.com/CSite-High-Wall/Wall.Frontend/graphs/contributors">
+  <img src="https://contrib.rocks/image?repo=CSite-High-Wall/Wall.Frontend" />
+</a>
