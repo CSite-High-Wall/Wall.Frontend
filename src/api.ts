@@ -50,8 +50,6 @@ export async function Authenticate(username: string, password: string) {
       password: password,
     });
 
-    console.log(response.data.data);
-
     Cookie.setCookie(
       "userid",
       response.data.data.user_id,

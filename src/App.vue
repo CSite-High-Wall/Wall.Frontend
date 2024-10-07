@@ -89,6 +89,7 @@ router.beforeEach((to) => {
                 alignItems: 'center',
                 color: '#1D2129',
               }"
+              @click="router.push('/profile')"
             >
               <a-avatar
                 :imageUrl="AvatarUrl"
