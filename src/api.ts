@@ -50,15 +50,17 @@ export async function Authenticate(username: string, password: string) {
       password: password,
     });
 
+    console.log(response.data.data);
+
     Cookie.setCookie(
       "userid",
       response.data.data.user_id,
-      response.data.data.expire_time
+      response.data.data.expires_in
     );
     Cookie.setCookie(
       "token",
       response.data.data.access_token,
-      response.data.data.expire_time
+      response.data.data.expires_in
     );
 
     return {
@@ -107,8 +109,8 @@ export async function SignOut() {
       access_token: Cookie.getCookie("token"),
     });
 
-    Cookie.setCookie("userid", "", 0);
-    Cookie.setCookie("token", "", 0);
+    Cookie.deleteCookie("userid");
+    Cookie.deleteCookie("token");
 
     return {
       success: true,
