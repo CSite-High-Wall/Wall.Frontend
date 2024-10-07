@@ -27,7 +27,11 @@ onMounted(async () => {
   var result = await FetchTargetExpression(Number(route.query?.expression_id));
 
   if (result.success) expression.value = result.data as Expression;
-  else Message.info(result.data);
+  else {
+    Message.info(result.data);
+    router.push("/home");
+    return;
+  }
   loadingExpression.value = false;
 
   var reviewsResult = await FetchReviewOfExpression(
@@ -208,6 +212,7 @@ const deleteReviewId = ref(-1);
           type="primary"
           :disabled="!AuthState || reviewInput == ''"
           @click="handleSubmit"
+          
         >
           发表评论
         </a-button>

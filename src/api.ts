@@ -11,7 +11,7 @@ import {
   CreateBlacklistExpressionItem,
   BlacklistExpressionItem,
 } from "./types";
-import { AuthState, UserId } from "./stores/auth";
+import { AuthState } from "./stores/auth";
 
 const instance = axios.create({
   baseURL: "http://47.98.245.204",
@@ -162,9 +162,16 @@ export async function FetchAllExpression() {
 
 export async function FetchTargetExpression(expressionId: number) {
   try {
-    var response = await instance.get(
-      "/api/community/expression?expression_id=" + expressionId
-    );
+    var response = AuthState
+      ? await instance.get(
+          "/api/community/expression?expression_id=" + expressionId,
+          {
+            headers: { Authorization: "Bearer " + Cookie.getCookie("token") },
+          }
+        )
+      : await instance.get(
+          "/api/community/expression?expression_id=" + expressionId
+        );
 
     return {
       success: true,
@@ -185,14 +192,16 @@ export async function FetchTargetExpression(expressionId: number) {
 
 export async function FetchReviewOfExpression(expressionId: number) {
   try {
-    var response = await instance.get(
-      UserId.value != ""
-        ? "/api/community/review?expression_id=" +
-            expressionId +
-            "&user_id=" +
-            UserId.value
-        : "/api/community/review?expression_id=" + expressionId
-    );
+    var response = AuthState
+      ? await instance.get(
+          "/api/community/review?expression_id=" + String(expressionId),
+          {
+            headers: { Authorization: "Bearer " + Cookie.getCookie("token") },
+          }
+        )
+      : await instance.get(
+          "/api/community/review?expression_id=" + String(expressionId)
+        );
 
     var list: Array<Review> = new Array<Review>();
 
@@ -270,7 +279,8 @@ export async function FetchExpressionBlacklist() {
     var response = await instance.get("/api/profile/expression-blacklist/get", {
       headers: { Authorization: "Bearer " + Cookie.getCookie("token") },
     });
-    var list: Array<BlacklistExpressionItem> = new Array<BlacklistExpressionItem>();
+    var list: Array<BlacklistExpressionItem> =
+      new Array<BlacklistExpressionItem>();
 
     response.data.data.blacklist.forEach((element: any) => {
       list.push(CreateBlacklistExpressionItem(element));
@@ -581,7 +591,8 @@ export async function RemoveUserFromBlacklist(userId: string) {
 export async function AddExpressionIntoBlacklist(expressionId: number) {
   try {
     await instance.post(
-      "/api/profile/expression-blacklist/add?blocked_expression_id=" + String(expressionId),
+      "/api/profile/expression-blacklist/add?blocked_expression_id=" +
+        String(expressionId),
       {},
       {
         headers: { Authorization: "Bearer " + Cookie.getCookie("token") },
@@ -608,7 +619,8 @@ export async function AddExpressionIntoBlacklist(expressionId: number) {
 export async function RemoveExpressionFromBlacklist(expressionId: number) {
   try {
     await instance.delete(
-      "/api/profile/expression-blacklist/remove?blocked_expression_id=" + String(expressionId),
+      "/api/profile/expression-blacklist/remove?blocked_expression_id=" +
+        String(expressionId),
       {
         headers: { Authorization: "Bearer " + Cookie.getCookie("token") },
       }

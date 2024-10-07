@@ -44,6 +44,7 @@ const ChangedNickName = ref("");
 onMounted(async () => {
   if (!AuthState.value || !(await Validate())) {
     router.push("/login");
+    return
   }
 
   var result = await FetchUserExpression();
